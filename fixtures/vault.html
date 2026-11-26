@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Synthetic vault application</title></head>
+<body>
+<main>
+  <h1>Apply for the Product Designer role</h1>
+  <form>
+    <p><label>First name <input id="first-name" autocomplete="given-name"></label></p>
+    <p><label for="project">Describe a design project you led.</label><br>
+    <textarea id="project" aria-describedby="project-hint" maxlength="250"></textarea><br>
+    <small id="project-hint">Explain the process and the outcome.</small></p>
+    <p><label for="challenge">Describe a collaboration challenge you faced.</label><br>
+    <textarea id="challenge" maxlength="240"></textarea></p>
+    <p><label for="saved">Describe a research project you led.</label><br>
+    <textarea id="saved"></textarea></p>
+    <p><label for="manual">Describe a leadership experience.</label><br>
+    <textarea id="manual">Applicant's pre-existing response.</textarea></p>
+    <p><label for="legal">Explain your visa sponsorship requirements.</label><br>
+    <textarea id="legal"></textarea></p>
+    <button type="submit">Submit application</button>
+  </form>
+  <script>
+    window.fixtureSubmission = { clicks: 0, submits: 0 };
+    document.querySelector('form').addEventListener('submit', event => {
+      event.preventDefault();
+      window.fixtureSubmission.submits++;
+    });
+    document.querySelector('button[type=submit]').addEventListener('click', () => {
+      window.fixtureSubmission.clicks++;
+    });
+  </script>
+</main>
+</body>
+</html>

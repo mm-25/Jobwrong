@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JobRight Local</title>
+  <link rel="stylesheet" href="extension.css">
+  <script defer src="popup.js"></script>
+</head>
+<body class="popup">
+  <header class="popup-header">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>JobRight Local</div>
+    <button type="button" class="button quiet" id="open-profile">Profile</button>
+  </header>
+
+  <main class="popup-main">
+    <section class="scan-control" aria-labelledby="popup-title">
+      <div class="scan-intro">
+        <h1 id="popup-title">Application autofill</h1>
+        <p>Fill directly from your profile and saved defaults.</p>
+      </div>
+      <button type="button" class="button primary scan-button" id="autofill-now">Autofill</button>
+      <button type="button" class="button quiet" id="scan">Review fields</button>
+      <label class="check-line">
+        <input type="checkbox" id="overwrite">
+        <span>Replace existing answers</span>
+      </label>
+    </section>
+
+    <p id="popup-status" class="notice" role="status" aria-atomic="true" hidden></p>
+    <ul id="warnings" class="warnings" hidden></ul>
+    <button type="button" class="button quiet" id="vault-sources-button">View Obsidian sources</button>
+    <section id="vault-sources" class="review-panel" aria-label="Obsidian sources" hidden>
+      <p id="vault-sources-status" class="hint"></p>
+      <ul id="vault-source-list"></ul>
+    </section>
+
+    <section id="ai-review" class="review-panel" aria-labelledby="review-title" hidden>
+      <h2 id="review-title" tabindex="-1">Review AI suggestions</h2>
+      <p>Edit drafts as needed, then select the answers to add to the form preview.</p>
+      <div id="suggestions" class="suggestions"></div>
+      <div class="review-actions">
+        <button type="button" class="button secondary" id="discard-ai">Discard</button>
+        <button type="button" class="button primary" id="apply-ai" disabled>Add to preview</button>
+      </div>
+    </section>
+
+    <section id="preview" class="preview" aria-labelledby="preview-title" hidden>
+      <div class="preview-head">
+        <div>
+          <h2 id="preview-title" tabindex="-1">Form preview</h2>
+          <p id="scan-summary"></p>
+        </div>
+        <label class="check-line select-all" id="select-all-label" hidden>
+          <input type="checkbox" id="select-all">
+          <span>Select all</span>
+        </label>
+      </div>
+      <p id="manual-summary" class="coverage-note" hidden></p>
+      <div id="frames" class="frames"></div>
+      <div id="ai-actions" class="ai-actions" hidden>
+        <label class="field-row-title" for="application-notes">Notes for this application</label>
+        <textarea id="application-notes" rows="3" placeholder="What interests you about this role, plus facts you want included." aria-describedby="ai-hint"></textarea>
+        <button type="button" class="button secondary" id="suggest-ai" aria-describedby="ai-hint">Suggest with AI</button>
+        <p class="hint" id="ai-hint">Notes are optional. When you request suggestions, your AI provider receives these notes, eligible questions, and employment and education details.</p>
+      </div>
+    </section>
+
+    <details id="fill-details" class="fill-details" hidden>
+      <summary>View fill details</summary>
+      <ul id="fill-entries"></ul>
+    </details>
+  </main>
+
+  <footer class="popup-footer">
+    <button type="button" class="button quiet" id="undo">Undo last fill</button>
+    <button type="button" class="button primary" id="fill" disabled>Fill selected</button>
+  </footer>
+</body>
+</html>

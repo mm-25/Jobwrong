@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Apply for Staff Designer</title></head>
+<body>
+  <main id="ashby-embed">
+    <h1>Staff Designer</h1>
+    <form class="ashby-application-form" action="/submitted" method="post">
+      <div class="ashby-application-form-question">
+        <label for="applicant-name">Full Name</label>
+        <input id="applicant-name" name="_systemfield_name" autocomplete="name" required>
+      </div>
+      <div class="ashby-application-form-question">
+        <label for="country-text">Country</label>
+        <input id="country-text" role="combobox" aria-expanded="false" aria-controls="country-options" aria-autocomplete="list" autocomplete="off" required>
+        <input type="hidden" name="application_country">
+        <button type="button" aria-label="Clear selection" hidden>Clear</button>
+        <ul role="listbox" id="country-options" hidden>
+          <li role="option" data-value="CA" aria-selected="false">Canada</li>
+          <li role="option" data-value="US" aria-selected="false">United States</li>
+          <li role="option" data-value="UM" aria-selected="false">United States Minor Outlying Islands</li>
+        </ul>
+      </div>
+      <div class="ashby-application-form-question">
+        <label for="design-project">Describe a design project you are proud of.</label>
+        <textarea id="design-project" name="application_design_project" required></textarea>
+      </div>
+      <button type="submit">Submit application</button>
+    </form>
+  </main>
+  <script>
+    const combo = document.querySelector('#country-text');
+    const list = document.querySelector('#country-options');
+    const committed = document.querySelector('[name="application_country"]');
+    const clear = document.querySelector('[aria-label="Clear selection"]');
+    function setOpen(open) {
+      combo.setAttribute('aria-expanded', String(open));
+      list.hidden = !open;
+    }
+    combo.addEventListener('click', () => setOpen(true));
+    combo.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') setOpen(true);
+      if (event.key === 'Escape') setOpen(false);
+    });
+    list.addEventListener('click', (event) => {
+      const option = event.target.closest('[role="option"]');
+      if (!option || list.hidden) return;
+      for (const item of list.children) item.setAttribute('aria-selected', String(item === option));
+      combo.value = option.textContent;
+      committed.value = option.dataset.value;
+      clear.hidden = false;
+      setOpen(false);
+      combo.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    clear.addEventListener('click', () => {
+      for (const item of list.children) item.setAttribute('aria-selected', 'false');
+      combo.value = '';
+      committed.value = '';
+      clear.hidden = true;
+      setOpen(false);
+      combo.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  </script>
+</body>
+</html>

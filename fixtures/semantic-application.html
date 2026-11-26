@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Application questions</title>
+  <style>
+    body { max-width: 920px; margin: 32px auto; padding: 0 24px; color: #1d2633; font: 16px/1.5 system-ui, sans-serif; }
+    form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 18px; }
+    .field { padding: 12px 16px; border: 1px solid #c9d0da; border-radius: 8px; }
+    .full { grid-column: 1 / -1; }
+    .field > label:not(.checkbox), legend { font-weight: 600; }
+    legend { padding: 0 6px; }
+    input:not([type="checkbox"], [type="radio"]), select, .typeahead-control, [role="combobox"] { display: block; box-sizing: border-box; margin-top: 4px; max-width: 100%; }
+    input:not([type="checkbox"], [type="radio"]), select { width: 100%; padding: 5px; }
+    .typeahead-control { position: relative; }
+    .typeahead-control input { padding-right: 42px; }
+    .typeahead-control > button:not([role="combobox"]) { position: absolute; top: 0; right: 0; height: 100%; }
+    [role="listbox"] { display: grid; position: absolute; z-index: 1; min-width: 250px; padding: 4px; background: white; border: 1px solid #8494a8; }
+    [role="checkbox"][aria-checked="true"] { background: #dcedff; }
+    [role="checkbox"][aria-checked="true"]::before { content: '✓ '; }
+    button[type="submit"] { justify-self: start; }
+    @media (max-width: 680px) { form { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Application questions</h1>
+    <form class="gh-apply-form" method="post" action="/submitted" novalidate>
+      <div class="field full">
+        <label class="labell" for="gh-sponsorship">Do you now or will you in the future need C3 AI to sponsor you for a visa to work in the United States (e.g., H-1B; O-1; TN; E-3)?<span class="required">*</span></label>
+        <div class="control typeahead-control">
+          <input id="gh-sponsorship" name="sponsorship" type="text" role="combobox" aria-autocomplete="list"
+            aria-controls="gh-sponsorship-listbox" aria-expanded="false" placeholder="Choose">
+          <button type="button" aria-label="Toggle sponsorship options">▼</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="inverse">Can you legally work here without visa sponsorship?</label>
+        <input id="inverse" name="without_sponsorship" type="text">
+      </div>
+      <fieldset class="field">
+        <legend>What is your gender identity?</legend>
+        <label><input type="radio" name="gender" value="woman">Woman</label>
+        <label><input type="radio" name="gender" value="man">Man</label>
+      </fieldset>
+
+      <div class="field">
+        <label for="disability">Disability status</label>
+        <select id="disability" name="disability">
+          <option value="">Choose</option>
+          <option value="y">Yes, I have a disability, or have had one in the past</option>
+          <option value="n">No, I do not have a disability and have not had one in the past</option>
+          <option value="undisclosed">I do not want to answer</option>
+        </select>
+      </div>
+      <fieldset class="field">
+        <legend>Do you have a disability?</legend>
+        <label><input type="radio" name="disability_radio" value="yes">Yes</label>
+        <label><input type="radio" name="disability_radio" value="no">No</label>
+      </fieldset>
+
+      <div class="field">
+        <label class="checkbox"><input type="checkbox" name="no_disability">I don't have a disability</label>
+      </div>
+      <div class="field">
+        <button type="button" id="disability-check" role="checkbox" aria-checked="false">I am not disabled</button>
+      </div>
+      <div class="field">
+        <label for="disability-inverse">Are you not disabled?</label>
+        <input id="disability-inverse" name="disability_text" type="text">
+      </div>
+      <div class="field">
+        <label for="disability-menu">Voluntary self-identification of disability</label>
+        <div class="typeahead-control">
+          <button type="button" id="disability-menu" role="combobox"
+            aria-controls="disability-options" aria-expanded="false">Choose</button>
+        </div>
+      </div>
+
+      <fieldset class="field">
+        <legend>Are you Hispanic/Latino?</legend>
+        <label><input type="checkbox" name="hispanic" value="y">Hispanic or Latino</label>
+        <label><input type="checkbox" name="hispanic" value="n">Not Hispanic or Latino</label>
+      </fieldset>
+      <div class="field">
+        <label for="veteran">Veteran status</label>
+        <select id="veteran" name="veteran">
+          <option value="">Choose</option>
+          <option value="protected">I identify as one or more classifications of protected veteran</option>
+          <option value="not-protected">I am not a protected veteran</option>
+          <option value="decline">Decline to self-identify</option>
+        </select>
+      </div>
+
+      <div class="field full">
+        <label class="labell">Read the applicant privacy notice for details on how we collect, process, and share personal data when you apply for a role.<span class="required">*</span></label>
+        <div class="checkbox-group">
+          <label class="checkbox"><input type="checkbox" name="privacy_accept">I Accept</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="authorization">Are you legally authorized to work in the United States?</label>
+        <input id="authorization" name="authorization" type="text">
+      </div>
+      <div class="field">
+        <label class="checkbox"><input type="checkbox" name="sms_consent">I consent to receive SMS messages about this application.</label>
+      </div>
+      <div class="field">
+        <label class="checkbox"><input type="checkbox" name="general_accept">I Accept</label>
+      </div>
+      <div class="field">
+        <label class="checkbox"><input type="checkbox" name="mixed_terms">I accept the applicant privacy policy and terms and conditions.</label>
+      </div>
+      <div class="field">
+        <label for="signature">Electronic signature</label>
+        <input id="signature" name="signature" type="text">
+      </div>
+      <button type="submit">Submit application</button>
+    </form>
+  </main>
+  <script>
+    const form = document.querySelector('form');
+    const fixtureEvents = { listboxOpens: 0, submitEvents: 0, submitButtonClicks: 0 };
+    Object.defineProperty(window, 'fixtureEvents', { value: fixtureEvents });
+    form.addEventListener('submit', (event) => {
+      fixtureEvents.submitEvents++;
+      event.preventDefault();
+    });
+    form.addEventListener('click', (event) => {
+      if (event.target.closest('[type="submit"]')) fixtureEvents.submitButtonClicks++;
+    });
+
+    function mountMenu(trigger, opener, options) {
+      const owner = trigger.parentElement;
+      const listId = trigger.getAttribute('aria-controls');
+      let pending;
+      function closeMenu() {
+        window.clearTimeout(pending);
+        owner.querySelector('[role="listbox"]')?.remove();
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+      opener.addEventListener('click', () => {
+        if (trigger.getAttribute('aria-expanded') === 'true') {
+          closeMenu();
+          return;
+        }
+        fixtureEvents.listboxOpens++;
+        trigger.setAttribute('aria-expanded', 'true');
+        pending = window.setTimeout(() => {
+          const list = document.createElement('div');
+          list.id = listId;
+          list.setAttribute('role', 'listbox');
+          for (const label of options) {
+            const choice = document.createElement('button');
+            choice.type = 'button';
+            choice.setAttribute('role', 'option');
+            choice.textContent = label;
+            choice.addEventListener('click', () => {
+              if (trigger.matches('input')) trigger.value = label;
+              else trigger.textContent = label;
+              closeMenu();
+            });
+            list.append(choice);
+          }
+          owner.append(list);
+        }, 40);
+      });
+      trigger.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeMenu();
+      });
+    }
+
+    const sponsorship = document.querySelector('#gh-sponsorship');
+    mountMenu(sponsorship, sponsorship.nextElementSibling, [
+      'I need visa sponsorship',
+      'I do not need visa sponsorship',
+    ]);
+    const disability = document.querySelector('#disability-menu');
+    mountMenu(disability, disability, ['I have a disability', 'I do not have a disability', 'Decline to self-identify']);
+    const disabilityCheckbox = document.querySelector('#disability-check');
+    disabilityCheckbox.addEventListener('click', () => {
+      disabilityCheckbox.setAttribute('aria-checked', String(disabilityCheckbox.getAttribute('aria-checked') !== 'true'));
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Workday job board source</title>
+  <style>
+    .ReactVirtualized__List { height: 320px; width: 340px; overflow-y: auto; overflow-x: hidden; overflow-anchor: none; }
+    .ReactVirtualized__Grid__innerScrollContainer { position: relative; overflow: hidden; }
+    .ReactVirtualized__List [role="option"] { position: absolute; left: 0; right: 0; height: 32px; }
+    [data-automation-id="backButton"] { display: inline-block; padding: 4px; }
+  </style>
+</head>
+<body data-selection-clicks="0" data-submit-clicks="0" data-submits="0" data-scroll-events="0" data-job-board-visits="0">
+  <main data-automation-id="applyFlowPage">
+    <form action="/submitted">
+      <div data-automation-id="formField-source">
+        <label for="source--source">Where did you hear about us?</label>
+        <div id="source-prompt" data-automation-id="multiSelectContainer">
+          <div data-automation-id="multiselectInputContainer">
+            <div data-automation-hiddensearch="false">
+              <div data-automation-id="promptSelectionLabel"></div>
+              <div id="source-instruction" data-automation-id="promptAriaInstruction" aria-hidden="true">0 items selected</div>
+              <input id="source--source" placeholder="Search" enterkeyhint="search" aria-describedby="source-instruction"
+                data-uxi-widget-type="selectinput" data-uxi-multiselect-id="source-prompt">
+            </div>
+          </div>
+        </div>
+        <input type="hidden" name="source">
+      </div>
+      <button type="submit">Submit application</button>
+    </form>
+  </main>
+  <script>
+    const input = document.querySelector('#source--source');
+    const widget = document.querySelector('#source-prompt');
+    const instruction = document.querySelector('#source-instruction');
+    const stored = document.querySelector('input[name="source"]');
+    const body = document.body;
+    const params = new URL(location.href).searchParams;
+    const fieldOfStudy = params.has('fieldOfStudy');
+    const anomaly = params.get('fieldOfStudy');
+    const measured = params.get('measurement') || (anomaly === 'measured' ? 'variable' : '');
+    const delayedTail = params.get('tail') === 'delayed';
+    const replay = params.get('replay');
+    const sourceCategories = ['Alcon', 'Conference/Career Fair', 'Job Board', 'Other', 'Social Media'];
+    const hasAlternatives = anomaly === 'alternative' || anomaly === 'progressive';
+    const matchingCaption = hasAlternatives ? 'Product Design' : fieldOfStudy ? 'Visual Communication' : 'LinkedIn';
+    const captions = Array.from({ length: delayedTail ? 5 : fieldOfStudy ? 333 : 44 },
+      (_, index) => (fieldOfStudy ? 'Study Field ' : 'Job Listing ') + (index + 1));
+    if (delayedTail) {
+      captions[0] = matchingCaption;
+      captions[4] = matchingCaption;
+    } else {
+      captions[hasAlternatives ? 299 : fieldOfStudy ? 297 : 37] = matchingCaption;
+    }
+    if (anomaly === 'duplicate') captions[117] = matchingCaption;
+    if (anomaly === 'low-count') captions[2] = matchingCaption;
+    if (hasAlternatives) captions[2] = 'Other';
+    if (params.get('duplicate') === 'yes') captions[16] = matchingCaption;
+    const rowHeight = delayedTail ? 24 : fieldOfStudy ? 30 : 32;
+    const slotCount = delayedTail ? 4 : fieldOfStudy ? 15 : replay ? 13 : 11;
+    let portal;
+
+    if (fieldOfStudy) {
+      const field = input.closest('[data-automation-id="formField-source"]');
+      field.setAttribute('data-automation-id', 'formField-fieldOfStudy');
+      input.id = 'education-6--fieldOfStudy';
+      const label = field.querySelector('label');
+      label.htmlFor = input.id;
+      label.textContent = 'Field of Study';
+      const row = document.createElement('div');
+      row.setAttribute('role', 'group');
+      row.setAttribute('aria-labelledby', 'Education-1-panel');
+      row.innerHTML = `<h5 id="Education-1-panel">Education 1</h5>
+        <label for="education-6--schoolName">School or University</label>
+        <input id="education-6--schoolName" value="Example Art University">`;
+      field.before(row);
+      row.append(field);
+    }
+
+    function option(caption, branch = false) {
+      const node = document.createElement('div');
+      node.setAttribute('role', 'option');
+      node.setAttribute('data-automation-id', 'menuItem');
+      node.setAttribute('aria-selected', 'false');
+      node.setAttribute('aria-label', caption + ' not checked');
+      node.innerHTML = `<div data-automation-id="promptLeafNode" data-uxi-multiselect-id="source-prompt"
+        data-uxi-multiselectlistitem-hassidecharm="${branch}">
+        ${branch ? '' : '<input type="radio" data-automation-id="radioBtn" aria-checked="false">'}
+        <div data-automation-id="promptOption">${caption}</div></div>`;
+      return node;
+    }
+
+    function rootMenu() {
+      if (fieldOfStudy && anomaly !== 'filtered') {
+        virtualCategory();
+        return;
+      }
+      const rootCaptions = fieldOfStudy ? [matchingCaption] : sourceCategories;
+      if (replay) {
+        shortList(rootCaptions, '');
+        return;
+      }
+      portal.innerHTML = `<div data-automation-id="activeListContainer" role="listbox" aria-label="Options Expanded">
+        <div role="presentation"></div></div>`;
+      const list = portal.querySelector('[role="presentation"]');
+      for (const caption of rootCaptions) list.append(option(caption, caption === 'Job Board'));
+    }
+
+    function categoryHeader(title) {
+      return `<div data-automation-id="multiSelectHeader" data-uxi-widget-type="multiselectlistheader"
+        data-uxi-multiselect-id="source-prompt" data-uxi-multiselectlistheader-clickable="true">
+        <div><span data-automation-id="backButton">Back</span></div>
+        <div data-automation-id="promptTitle" aria-hidden="true" title="${title}">${title}</div></div>`;
+    }
+
+    function shortList(captions, title, branches = !title) {
+      const height = captions.length * 32;
+      portal.innerHTML = `${title ? categoryHeader(title) : ''}
+        <div data-automation-id="activeListContainer" role="listbox" aria-label="Options Expanded"
+          class="ReactVirtualized__Grid ReactVirtualized__List" style="height:${height}px; overflow:hidden">
+          <div class="ReactVirtualized__Grid__innerScrollContainer" role="presentation" style="height:${height}px"></div></div>`;
+      const list = portal.querySelector('[role="presentation"]');
+      captions.forEach((caption, index) => {
+        const row = option(caption, branches);
+        row.id = 'menuItem-' + (title || 'root').replace(/[^a-z]/gi, '') + '-' + (index + 1);
+        row.style.top = (index * 32) + 'px';
+        row.setAttribute('aria-posinset', String(index + 1));
+        row.setAttribute('aria-setsize', String(captions.length));
+        list.append(row);
+      });
+    }
+
+    function virtualCategory(title = 'Job Board') {
+      if (!fieldOfStudy) body.dataset.jobBoardVisits++;
+      const incompleteHeader = '<div data-automation-id="multiSelectHeader"><div data-automation-id="promptTitle">Unverified category</div></div>';
+      const header = fieldOfStudy ? (anomaly === 'category' ? incompleteHeader : '') : categoryHeader(title);
+      portal.innerHTML = `${header}
+        <div data-automation-id="activeListContainer" role="listbox" aria-label="Options Expanded"
+          class="ReactVirtualized__Grid ReactVirtualized__List">
+          <div class="ReactVirtualized__Grid__innerScrollContainer" role="presentation"></div></div>`;
+      const menu = portal.querySelector('[role="listbox"]');
+      if (delayedTail) menu.style.height = '96px';
+      else if (fieldOfStudy) menu.style.height = '440px';
+      else if (replay) menu.style.height = '368px';
+      else if (measured) menu.style.height = '268px';
+      const content = menu.firstElementChild;
+      if (anomaly === 'progressive') {
+        progressiveStudyList(menu, content);
+        return;
+      }
+      content.style.height = fieldOfStudy ? '10020px' : String(captions.length * rowHeight) + 'px';
+      const measuredSlots = delayedTail ? 5 : fieldOfStudy ? 26 : replay ? 23 : 20;
+      const slots = Array.from({ length: measured || delayedTail || replay ? measuredSlots : slotCount }, () => option(''));
+      content.append(...slots);
+      const rememberedMeasurements = !!measured && !fieldOfStudy && Number(body.dataset.jobBoardVisits) > 1;
+      let measuredFirstWindow = rememberedMeasurements;
+      let exactRows = rememberedMeasurements ? 23 : slotCount;
+      let measuredTailWindow = false;
+      let delayedTailVisible = false;
+      let reachedEnd = false;
+      function rowTop(index) {
+        return measured || fieldOfStudy || replay ? index * 30 + Math.min(index, exactRows) * 2 : index * rowHeight;
+      }
+      function render() {
+        if (!menu.isConnected) return;
+        if ((measured || replay) && menu.scrollTop > 0 && !measuredFirstWindow) {
+          exactRows = fieldOfStudy ? 31 : replay ? 34 : 23;
+          measuredFirstWindow = true;
+        }
+        if (measured && !fieldOfStudy && !measuredTailWindow && menu.scrollTop >= 1098) {
+          exactRows = 17;
+          measuredTailWindow = true;
+        }
+        const visibleSlots = ((measured || replay) && measuredFirstWindow) || delayedTailVisible ? slots.length : slotCount;
+        if (measured || replay) {
+          content.style.height = rowTop(captions.length) + 'px';
+          if (measuredTailWindow) body.dataset.settledScrollHeight = String(menu.scrollHeight);
+          else if (measuredFirstWindow) body.dataset.measuredScrollHeight = String(menu.scrollHeight);
+        }
+        let first = Math.min(captions.length - visibleSlots, Math.floor(menu.scrollTop / rowHeight));
+        if (delayedTail) first = 0;
+        else if (measured || fieldOfStudy || replay) {
+          first = 0;
+          while (first < captions.length && rowTop(first + 1) <= menu.scrollTop) first++;
+          const overscanBefore = measured || replay ? 1 : 0;
+          first = Math.max(0, Math.min(captions.length - visibleSlots, first - overscanBefore));
+        }
+        slots.forEach((slot, offset) => {
+          if (offset >= visibleSlots) {
+            slot.hidden = true;
+            slot.removeAttribute('aria-posinset');
+            slot.removeAttribute('aria-setsize');
+            return;
+          }
+          const index = first + offset;
+          const changedOnReplay = replay === 'changed' && Number(body.dataset.jobBoardVisits) === 2 && index === 41;
+          const caption = changedOnReplay ? 'Changed offscreen listing' : captions[index];
+          const idPosition = anomaly === 'reused-id' && index === 164 ? 20 : index + 1;
+          slot.id = 'menuItem-' + (fieldOfStudy ? 'fieldOfStudy-' : 'jobBoard-') + idPosition;
+          slot.style.top = rowTop(index) + 'px';
+          if (delayedTail || measured || fieldOfStudy || replay) slot.style.height = (rowTop(index + 1) - rowTop(index)) + 'px';
+          // This virtual window does not mount the final row until it renders at the physical end.
+          const beforeEnd = menu.scrollHeight - menu.clientHeight - menu.scrollTop > 1;
+          slot.hidden = (anomaly === 'gap' && index === 108) || (!!replay && index === captions.length - 1 && beforeEnd);
+          slot.setAttribute('aria-posinset', String(index + 1));
+          const changedCount = (anomaly === 'count' && index === 164) || (measured === 'invalid' && index === 16);
+          const size = delayedTail || anomaly === 'low-count' ? slotCount : captions.length - Number(changedCount);
+          slot.setAttribute('aria-setsize', String(size));
+          slot.setAttribute('aria-label', caption + ' not checked');
+          slot.querySelector('[data-automation-id="promptOption"]').textContent = caption;
+        });
+        body.dataset.lastRenderedPosition = String(Math.max(Number(body.dataset.lastRenderedPosition || 0), first + visibleSlots));
+        if (replay && !reachedEnd && Math.abs(menu.scrollTop + menu.clientHeight - menu.scrollHeight) <= 1 && first + visibleSlots === captions.length) {
+          reachedEnd = true;
+          body.dataset.jobBoardEnds = String(Number(body.dataset.jobBoardEnds || 0) + 1);
+        }
+      }
+      menu.addEventListener('scroll', () => {
+        body.dataset.scrollEvents++;
+        if (replay === 'mid-census' && body.dataset.jobBoardVisits === '2' && menu.scrollTop > 0 && !body.dataset.midCensusRemount) {
+          body.dataset.midCensusRemount = '1';
+          const children = [...portal.children];
+          mountPortal();
+          portal.append(...children);
+        }
+        if (anomaly === 'cancel' && !input.value && menu.scrollTop > 0) {
+          input.value = 'My manual search';
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        if (delayedTail && menu.scrollTop > 0) {
+          setTimeout(() => {
+            delayedTailVisible = menu.scrollTop > 0;
+            render();
+          }, 250);
+        } else {
+          delayedTailVisible = false;
+          requestAnimationFrame(render);
+        }
+      });
+      render();
+      if (rememberedMeasurements) {
+        body.dataset.reopenedMountedOptions = String(content.querySelectorAll('[role="option"]:not([hidden])').length);
+      } else {
+        body.dataset.mountedOptions = String(content.querySelectorAll('[role="option"]:not([hidden])').length);
+        body.dataset.viewportHeight = String(menu.clientHeight);
+        body.dataset.scrollHeight = String(menu.scrollHeight);
+      }
+    }
+
+    function progressiveStudyList(menu, content) {
+      const measured = new Set(Array.from({ length: 15 }, (_, index) => index));
+      const slots = Array.from({ length: 36 }, () => option(''));
+      content.append(...slots);
+      let previousWindow;
+      let reachedEnd = false;
+
+      function topOf(index) {
+        let measuredBefore = 0;
+        for (const row of measured) if (row < index) measuredBefore++;
+        return index * 30 + measuredBefore * 2;
+      }
+
+      function windowFor(top) {
+        let visibleFirst = 0;
+        while (visibleFirst + 1 < captions.length && topOf(visibleFirst + 1) <= top) visibleFirst++;
+        let visibleLast = visibleFirst;
+        while (visibleLast + 1 < captions.length && topOf(visibleLast + 1) < top + menu.clientHeight) visibleLast++;
+        // ReactVirtualized's directional overscan can retract on the trailing side while rows are being measured.
+        const trailingOverscanShrinks = top === 0 || (top > 7100 && top < 7540);
+        return {
+          first: Math.max(0, visibleFirst - (trailingOverscanShrinks ? 10 : 1)),
+          last: Math.min(captions.length - 1, visibleLast + (trailingOverscanShrinks ? 1 : 18)),
+        };
+      }
+
+      function render() {
+        if (!menu.isConnected) return;
+        const top = menu.scrollTop;
+        let range = windowFor(top);
+        for (let index = range.first; index <= range.last; index++) measured.add(index);
+        content.style.height = topOf(captions.length) + 'px';
+        range = windowFor(top);
+        slots.forEach((slot, offset) => {
+          const index = range.first + offset;
+          const beforeEnd = menu.scrollHeight - menu.clientHeight - top > 1;
+          slot.hidden = index > range.last || (index === captions.length - 1 && beforeEnd);
+          if (slot.hidden) return;
+          const caption = captions[index];
+          slot.id = 'menuItem-progressive-' + (index + 1);
+          slot.style.top = topOf(index) + 'px';
+          slot.style.height = (topOf(index + 1) - topOf(index)) + 'px';
+          slot.setAttribute('aria-posinset', String(index + 1));
+          slot.setAttribute('aria-setsize', String(captions.length));
+          slot.setAttribute('aria-label', caption + ' not checked');
+          slot.querySelector('[data-automation-id="promptOption"]').textContent = caption;
+        });
+        if (previousWindow && top > previousWindow.top && range.last < previousWindow.last) {
+          body.dataset.overscanRetraction = String(menu.scrollHeight);
+        }
+        previousWindow = { top, last: range.last };
+        body.dataset.lastRenderedPosition = String(Math.max(Number(body.dataset.lastRenderedPosition || 0), range.last + 1));
+        if (top === 0) reachedEnd = false;
+        if (!reachedEnd && top + menu.clientHeight === menu.scrollHeight && range.last === captions.length - 1) {
+          reachedEnd = true;
+          const completed = Number(body.dataset.progressiveEnds || 0) + 1;
+          body.dataset.progressiveEnds = String(completed);
+          body.dataset.finalScrollHeight = String(menu.scrollHeight);
+        }
+      }
+
+      render();
+      body.dataset.mountedOptions = String(content.querySelectorAll('[role="option"]:not([hidden])').length);
+      body.dataset.viewportHeight = String(menu.clientHeight);
+      body.dataset.scrollHeight = String(menu.scrollHeight);
+      menu.addEventListener('scroll', () => {
+        body.dataset.scrollEvents++;
+        requestAnimationFrame(render);
+      });
+    }
+
+    function closeMenu() {
+      portal?.remove();
+      portal = undefined;
+      input.removeAttribute('data-automation-id');
+      input.parentElement.removeAttribute('data-automation-id');
+      input.parentElement.setAttribute('data-automation-hiddensearch', 'false');
+      instruction.textContent = stored.value ? '1 item selected, ' + (fieldOfStudy ? stored.value : matchingCaption) : '0 items selected';
+    }
+
+    function chooseMatch(caption) {
+      body.dataset.selectionClicks++;
+      stored.value = fieldOfStudy ? caption : 'linkedin';
+      closeMenu();
+      widget.insertAdjacentHTML('afterbegin', `<ul role="listbox" data-automation-id="selectedItemList" data-uxi-multiselect-id="source-prompt">
+        <li role="presentation" data-automation-id="menuItem">
+          <div role="option" data-automation-id="selectedItem" aria-label="${caption}, press delete to clear value.">
+            <div data-automation-id="DELETE_charm" role="presentation" aria-hidden="true" tabindex="-1"></div>
+            <p data-automation-id="promptOption">${caption}</p>
+          </div>
+        </li>
+      </ul>`);
+      widget.querySelector('[data-automation-id="DELETE_charm"]').addEventListener('click', () => {
+        widget.querySelector('[data-automation-id="selectedItemList"]').remove();
+        stored.value = '';
+        instruction.textContent = '0 items selected';
+      });
+    }
+
+    function mountPortal() {
+      const template = document.createElement('template');
+      template.innerHTML = `<div data-automation-id="responsiveMonikerPrompt" data-associated-widget="source-prompt"
+        data-automation-type="singleSelectPrompt" data-uxi-prompt-type="singleselect"></div>`;
+      const next = template.content.firstElementChild;
+      if (portal) portal.replaceWith(next);
+      else body.append(next);
+      portal = next;
+      body.dataset.portalMounts = String(Number(body.dataset.portalMounts || 0) + 1);
+      portal.addEventListener('click', handlePromptClick);
+    }
+
+    function handlePromptClick(event) {
+      if (event.target.matches('[data-automation-id="backButton"]')) {
+        const title = portal.querySelector('[data-automation-id="promptTitle"]')?.textContent;
+        const replaceRestoredRoot = replay?.startsWith('root-') && title === 'Social Media';
+        if (replay) mountPortal();
+        if (replay === 'nested' && title === 'Job Listings') {
+          shortList(['Job Listings'], 'Job Board', true);
+          return;
+        }
+        rootMenu();
+        if (replaceRestoredRoot) queueMicrotask(() => {
+          const root = portal.firstElementChild;
+          mountPortal();
+          if (replay === 'root-moved') portal.append(root);
+          else rootMenu();
+        });
+        return;
+      }
+      const option = event.target.closest('[role="option"]');
+      const caption = option?.querySelector('[data-automation-id="promptOption"]')?.textContent;
+      if (replay && sourceCategories.includes(caption)) {
+        body.dataset.enteredBranches = [...(body.dataset.enteredBranches?.split('|') || []), caption].join('|');
+        mountPortal();
+        if (caption === 'Job Board' && replay === 'nested') shortList(['Job Listings'], 'Job Board', true);
+        else if (caption === 'Job Board') virtualCategory();
+        else {
+          const choices = caption === 'Social Media' ? ['Facebook', 'Instagram', 'Other Social Media', 'Twitter', 'WeChat', 'YouTube'] : [caption + ' listing'];
+          shortList(choices, caption);
+        }
+      } else if (replay === 'nested' && caption === 'Job Listings') {
+        body.dataset.jobListingsEntries = String(Number(body.dataset.jobListingsEntries || 0) + 1);
+        mountPortal();
+        virtualCategory('Job Listings');
+      } else if (caption === 'Job Board') virtualCategory();
+      else if (caption === matchingCaption || (hasAlternatives && caption === 'Other')) chooseMatch(caption);
+    }
+
+    input.addEventListener('click', () => {
+      if (portal) return;
+      mountPortal();
+      input.setAttribute('data-automation-id', 'searchBox');
+      input.parentElement.setAttribute('data-automation-id', 'monikerSearchBox');
+      input.parentElement.setAttribute('data-automation-hiddensearch', 'true');
+      instruction.textContent = 'Expanded';
+      rootMenu();
+    });
+    input.addEventListener('keydown', event => { if (event.key === 'Escape') closeMenu(); });
+    if (anomaly === 'filtered') {
+      input.value = 'My manual search';
+      input.click();
+    }
+    document.querySelector('button[type="submit"]').addEventListener('click', () => { body.dataset.submitClicks++; });
+    document.querySelector('form').addEventListener('submit', event => { event.preventDefault(); body.dataset.submits++; });
+  </script>
+</body>
+</html>

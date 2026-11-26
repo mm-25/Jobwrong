@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Coverage regression application</title>
+<body><h1>Synthetic application</h1><form id="application">
+  <label>Middle name<input name="middleName"></label>
+  <label>Preferred first name<input name="preferredFirstName"></label>
+  <label>Address line 2<input name="address2"></label>
+  <label>County<input name="county"></label>
+  <label>Phone country code<select name="dialCode"><option value="">Choose</option><option value="1">+1</option><option value="91">+91</option></select></label>
+  <label>Current employer<input name="employer"></label>
+  <label>Current position title<input name="currentTitle"></label>
+  <fieldset data-section="education"><legend>Education</legend>
+    <label>School<input name="school"></label>
+    <label>Start month<select name="startMonth"><option value="">Choose</option><option value="07">July</option><option value="08">August</option></select></label>
+    <label>Start year<input name="startYear" type="number"></label>
+    <label>Graduation month<select name="endMonth"><option value="">Choose</option><option value="04">April</option><option value="05">May</option></select></label>
+    <label>Graduation year<input name="endYear" type="number"></label>
+    <label>I currently attend<input name="current" type="checkbox"></label>
+  </fieldset>
+  <fieldset><legend>Skills</legend>
+    <label><input type="checkbox" name="skills" value="design">Design</label>
+    <label><input type="checkbox" name="skills" value="research">Research</label>
+    <label><input type="checkbox" name="skills" value="coding">Coding</label>
+  </fieldset>
+  <label>Are you legally authorized to work in the United States?<select name="workAuth"><option value="">Choose</option><option>Yes</option><option>No</option></select></label>
+  <label>Do you require visa sponsorship to work in Canada?<select name="canadaSponsor"><option value="">Choose</option><option>Yes</option><option>No</option></select></label>
+  <label for="resume">Resume</label><input id="resume" name="resume" type="file" accept=".pdf" style="display:none">
+  <label id="custom-editor-label">Additional notes</label><div contenteditable="true" role="textbox" aria-labelledby="custom-editor-label"></div>
+  <fieldset><legend>Privacy consent</legend><label><input type="checkbox" name="consent">I agree</label></fieldset>
+  <button type="submit">Submit application</button>
+</form><script>
+  window.submitCount = 0;
+  document.querySelector('form').addEventListener('submit', event => { event.preventDefault(); window.submitCount++; });
+</script></body></html>

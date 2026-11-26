@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Apply for Senior Product Designer</title></head>
+<body>
+  <main data-automation-id="applicationPage">
+    <h1>My Experience</h1>
+    <form data-automation-id="candidateApplicationForm" action="/submitted" method="post">
+      <section data-automation-id="workExperienceSection">
+        <h2>Work Experience</h2>
+        <fieldset data-automation-id="workExperience-1">
+          <legend>Work Experience 1</legend>
+          <label for="workExperience-1-company">Company</label>
+          <input id="workExperience-1-company" name="workExperience-1-company" data-automation-id="company" required>
+          <label for="workExperience-1-jobTitle">Job Title</label>
+          <input id="workExperience-1-jobTitle" name="workExperience-1-jobTitle" data-automation-id="jobTitle" required>
+        </fieldset>
+        <fieldset data-automation-id="workExperience-2">
+          <legend>Work Experience 2</legend>
+          <label for="workExperience-2-company">Company</label>
+          <input id="workExperience-2-company" name="workExperience-2-company" data-automation-id="company" required>
+          <label for="workExperience-2-jobTitle">Job Title</label>
+          <input id="workExperience-2-jobTitle" name="workExperience-2-jobTitle" data-automation-id="jobTitle" required>
+        </fieldset>
+        <fieldset data-automation-id="workExperience-3">
+          <legend>Work Experience 3</legend>
+          <label for="workExperience-3-company">Company</label>
+          <input id="workExperience-3-company" name="workExperience-3-company" data-automation-id="company">
+        </fieldset>
+      </section>
+      <section data-automation-id="educationSection">
+        <h2>Education</h2>
+        <fieldset data-automation-id="education-1">
+          <legend>Education 1</legend>
+          <label for="education-1-schoolName">School or University</label>
+          <input id="education-1-schoolName" name="education-1-schoolName" data-automation-id="schoolName" required>
+          <label for="education-1-degree">Degree</label>
+          <select id="education-1-degree" name="education-1-degree" data-automation-id="degree">
+            <option value="">Select one</option>
+            <option value="ba">Bachelor of Arts</option>
+            <option value="ms">Master of Science</option>
+          </select>
+        </fieldset>
+        <fieldset data-automation-id="education-2">
+          <legend>Education 2</legend>
+          <label for="education-2-schoolName">School or University</label>
+          <input id="education-2-schoolName" name="education-2-schoolName" data-automation-id="schoolName" required>
+          <label for="education-2-degree">Degree</label>
+          <select id="education-2-degree" name="education-2-degree" data-automation-id="degree">
+            <option value="">Select one</option>
+            <option value="ba">Bachelor of Arts</option>
+            <option value="ms">Master of Science</option>
+          </select>
+        </fieldset>
+      </section>
+      <button type="submit" data-automation-id="bottom-navigation-next-button">Save and continue</button>
+    </form>
+  </main>
+</body>
+</html>

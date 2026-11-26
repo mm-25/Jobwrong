@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Application referral</title>
+  <style>
+    body { max-width: 860px; margin: 48px auto; padding: 0 24px; color: #202732; font: 16px/1.5 system-ui, sans-serif; }
+    form { padding: 18px; border: 1px solid #c9d0da; border-radius: 8px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+    button { margin: 0 4px 4px 0; padding: 6px 12px; }
+    [role="tree"], [role="group"] { margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Application referral</h1>
+    <form data-automation-id="applyFlowPage" method="post" action="/submitted" novalidate>
+      <div data-automation-id="formField-source">
+        <label for="source">How did you hear about us?</label>
+        <button type="button" id="source" data-automation-id="promptSearchButton"
+          aria-haspopup="tree" aria-controls="sources" aria-expanded="false">Select one</button>
+        <button type="button" aria-label="Clear selection" aria-controls="source">Clear</button>
+      </div>
+      <div id="sources" role="tree" hidden>
+        <button type="button" role="treeitem" data-automation-id="promptBranchNode"
+          aria-controls="job-boards" aria-expanded="false">Job boards</button>
+        <button type="button" role="treeitem" data-automation-id="promptBranchNode"
+          aria-controls="events" aria-expanded="false">Events</button>
+      </div>
+      <div id="job-boards" role="group" hidden>
+        <button type="button" role="treeitem" data-automation-id="promptLeafNode">Job board</button>
+      </div>
+      <div id="events" role="group" hidden>
+        <button type="button" role="treeitem" data-automation-id="promptLeafNode">Design conference</button>
+        <button type="button" role="treeitem" data-automation-id="promptLeafNode">Campus career fair</button>
+      </div>
+      <button type="submit">Submit application</button>
+    </form>
+    <details open>
+      <summary>Other examples</summary>
+      <div role="tree">
+        <button type="button" role="treeitem" data-automation-id="promptLeafNode" id="outside">Design conference</button>
+      </div>
+    </details>
+  </main>
+  <script>
+    const form = document.querySelector('form');
+    const source = document.querySelector('#source');
+    const tree = document.querySelector('#sources');
+    const fixtureEvents = { openings: 0, branches: [], selected: [], outsideClicks: 0, submissions: 0 };
+    Object.defineProperty(window, 'fixtureEvents', { value: fixtureEvents });
+    function expand(trigger, panel, open) {
+      trigger.setAttribute('aria-expanded', String(open));
+      panel.hidden = !open;
+    }
+    source.addEventListener('click', () => {
+      if (tree.hidden) fixtureEvents.openings++;
+      expand(source, tree, tree.hidden);
+    });
+    form.querySelector('[aria-label="Clear selection"]').addEventListener('click', () => {
+      source.textContent = 'Select one';
+    });
+    for (const branch of tree.querySelectorAll('[aria-controls]')) {
+      const panel = document.getElementById(branch.getAttribute('aria-controls'));
+      branch.addEventListener('click', () => {
+        if (panel.hidden) fixtureEvents.branches.push(branch.textContent);
+        expand(branch, panel, panel.hidden);
+      });
+      for (const leaf of panel.querySelectorAll('[role="treeitem"]')) {
+        leaf.addEventListener('click', () => {
+          fixtureEvents.selected.push(leaf.textContent);
+          source.textContent = leaf.textContent;
+          expand(branch, panel, false);
+          expand(source, tree, false);
+        });
+      }
+    }
+    document.querySelector('#outside').addEventListener('click', () => fixtureEvents.outsideClicks++);
+    form.addEventListener('submit', (event) => {
+      fixtureEvents.submissions++;
+      event.preventDefault();
+    });
+  </script>
+</body>
+</html>

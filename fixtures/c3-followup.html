@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Application questions</title>
+  <style>
+    body { max-width: 760px; margin: 36px auto; padding: 0 20px; color: #243145; font: 16px/1.5 system-ui, sans-serif; }
+    form { display: grid; gap: 16px; }
+    .field { padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; }
+    .labell { font-weight: 600; }
+    .typeahead { display: flex; gap: 4px; position: relative; margin-top: 4px; }
+    .typeahead > input { flex: 1; padding: 5px; min-width: 0; }
+    [role="listbox"] { display: grid; position: absolute; top: 100%; left: 0; z-index: 1; min-width: 240px; padding: 4px; background: white; border: 1px solid #8b9ab0; }
+    .legal { margin: 0 0 6px; }
+    [type="submit"] { justify-self: start; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Application questions</h1>
+    <form class="gh-apply-form" action="/submitted" method="post" novalidate>
+      <div class="field">
+        <label class="labell" for="gh-onsite">Are you willing to work from our Redwood City, CA office 5x week?<span class="required">*</span></label>
+        <div class="control"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="other-city">Are you open to working onsite at the Toronto office?</label>
+        <div class="control">
+          <select id="other-city" name="other_city">
+            <option value="">Choose</option>
+            <option value="y">Yes</option>
+            <option value="n">No</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-hispanic">Are you Hispanic/Latino?</label>
+        <div class="control"></div>
+      </div>
+      <div class="field" id="race-sector" hidden>
+        <label class="labell" for="gh-race">Please identify your race</label>
+        <div class="control"></div>
+      </div>
+      <div class="field" id="specific-sector" hidden>
+        <label class="labell" for="specific-race">Which of the following best describes your race or ethnicity?</label>
+        <div class="control"></div>
+      </div>
+      <div class="field application-privacy">
+        <div class="legal">The applicant privacy notice describes the use of personal data for recruitment and this application.<span class="required">*</span></div>
+        <div class="control">
+          <div class="checkbox-group">
+            <label class="checkbox"><input type="checkbox">I Accept</label>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="checkbox"><input type="checkbox" id="terms">I accept the applicant privacy notice and terms and conditions.</label>
+      </div>
+      <button type="submit">Submit application</button>
+    </form>
+  </main>
+  <script>
+    const form = document.querySelector('form');
+    const fixtureEvents = { committed: [], submitEvents: 0, submitButtonClicks: 0 };
+    Object.defineProperty(window, 'fixtureEvents', { value: fixtureEvents });
+    form.addEventListener('submit', (event) => {
+      fixtureEvents.submitEvents++;
+      event.preventDefault();
+    });
+    form.addEventListener('click', (event) => {
+      if (event.target.closest('[type="submit"]')) fixtureEvents.submitButtonClicks++;
+    });
+
+    function revealRace(show) {
+      document.querySelector('#race-sector').hidden = !show;
+      document.querySelector('#specific-sector').hidden = !show;
+    }
+
+    function createMenu(id, name, choices, onSelect = () => {}) {
+      const host = form.querySelector(`label[for="${id}"]`).nextElementSibling;
+      const listId = id + '-listbox';
+      host.innerHTML = `
+        <div class="typeahead">
+          <input id="${id}" name="${name}" type="text" role="combobox" aria-autocomplete="list"
+            aria-controls="${listId}" aria-expanded="false" placeholder="Choose">
+          <button type="button" aria-label="Toggle ${name} options">▼</button>
+          <button type="button" aria-label="Clear selection" aria-controls="${id}" hidden>Clear</button>
+        </div>`;
+      const input = host.querySelector('input');
+      const [toggle, clear] = host.querySelectorAll('button');
+      let pending;
+      let selected = '';
+
+      function close() {
+        window.clearTimeout(pending);
+        host.querySelector('[role="listbox"]')?.remove();
+        input.setAttribute('aria-expanded', 'false');
+      }
+      function open() {
+        input.setAttribute('aria-expanded', 'true');
+        pending = window.setTimeout(() => {
+          const list = document.createElement('div');
+          list.id = listId;
+          list.setAttribute('role', 'listbox');
+          for (const label of choices) {
+            const option = document.createElement('button');
+            option.type = 'button';
+            option.setAttribute('role', 'option');
+            option.setAttribute('aria-selected', String(label === selected));
+            option.textContent = label;
+            option.addEventListener('click', () => {
+              selected = label;
+              input.value = label;
+              clear.hidden = false;
+              fixtureEvents.committed.push([id, label]);
+              close();
+              onSelect(label);
+            });
+            list.append(option);
+          }
+          input.parentElement.append(list);
+        }, 30);
+      }
+      toggle.addEventListener('click', () => {
+        if (input.getAttribute('aria-expanded') === 'true') close();
+        else open();
+      });
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') close();
+      });
+      input.addEventListener('input', () => {
+        if (input.value !== selected) {
+          selected = '';
+          clear.hidden = true;
+          onSelect('');
+        }
+      });
+      clear.addEventListener('click', () => {
+        selected = '';
+        input.value = '';
+        clear.hidden = true;
+        close();
+        onSelect('');
+      });
+    }
+
+    createMenu('gh-onsite', 'onsite', ['Yes', 'No']);
+    createMenu('gh-hispanic', 'hispanic', ['Yes', 'No'], (label) => revealRace(label === 'No'));
+    createMenu('gh-race', 'race', ['White', 'Asian', 'Two or more races', 'Decline to self-identify']);
+    createMenu('specific-race', 'race_detail', ['White', 'Asian', 'South Asian', 'Decline to self-identify']);
+  </script>
+</body>
+</html>

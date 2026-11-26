@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Synthetic Lever application</title>
+</head>
+<body>
+  <style>
+    .invisible-resume-upload, .resume-upload-failure, .resume-upload-working,
+    .resume-upload-success, .dropdown-container { display: none; }
+  </style>
+  <form id="application-form" enctype="multipart/form-data" method="post">
+    <ul>
+      <li class="application-question resume">
+        <label>
+          <div class="application-label">Resume/CV <span class="required">✱</span></div>
+          <div class="application-field">
+            <a class="visible-resume-upload" href="#">Attach resume</a>
+            <span class="resume-upload-failure">Could not read the document.</span>
+            <span class="resume-upload-working">Analyzing resume…</span>
+            <span class="resume-upload-success">Document processed.</span>
+            <input class="application-file-input invisible-resume-upload" id="resume-upload-input" name="resume" type="file" accept=".pdf">
+          </div>
+        </label>
+      </li>
+      <li class="application-question">
+        <label>
+          <div class="application-label">Current location <span class="required">✱</span></div>
+          <div class="application-field">
+            <input class="location-input" id="location-input" name="location" type="text" required>
+            <input id="selected-location" name="selectedLocation" type="hidden">
+            <div class="dropdown-container">No location found. Loading…</div>
+          </div>
+        </label>
+      </li>
+      <li id="languages" class="application-question custom-question">
+        <div>
+          <div class="application-label full-width multiple-select"><div class="text">Language Skill(s) (Check all that apply) <span class="required">✱</span></div></div>
+          <div class="application-field full-width required-field">
+            <ul>
+              <li><label><input type="checkbox" name="cards[fixture-languages][field0]" value="English">English (ENG)</label></li>
+              <li><label><input type="checkbox" name="cards[fixture-languages][field0]" value="Spanish">Spanish (SPA)</label></li>
+              <li><label><input type="checkbox" name="cards[fixture-languages][field0]" value="Other">Other</label></li>
+            </ul>
+          </div>
+        </div>
+      </li>
+      <li id="deadlines" class="application-question custom-question">
+        <div>
+          <div class="application-label full-width multiple-select"><div class="text">If so, what are the dates?</div></div>
+          <div class="application-field full-width">
+            <ul>
+              <li><label><input type="checkbox" name="cards[fixture-deadlines][field1]" value="September 1 - September 15">September 1 - September 15</label></li>
+              <li><label><input type="checkbox" name="cards[fixture-deadlines][field1]" value="September 16 - September 30">September 16 - September 30</label></li>
+            </ul>
+          </div>
+        </div>
+      </li>
+      <li id="sponsorship" class="application-question custom-question">
+        <div>
+          <div class="application-label full-width multiple-choice"><div class="text">Will you now or in the future require sponsorship for employment visa status (e.g., H-1B, etc.)? <span class="required">✱</span></div></div>
+          <div class="application-field full-width required-field">
+            <ul>
+              <li><label><input type="radio" name="cards[fixture-work][field1]" value="Yes">Yes</label></li>
+              <li><label><input type="radio" name="cards[fixture-work][field1]" value="No">No</label></li>
+            </ul>
+          </div>
+        </div>
+      </li>
+      <li class="application-question custom-question">
+        <div>
+          <div class="application-label full-width dropdown"><div class="text">Which university did you last attend? <span class="required">✱</span></div></div>
+          <div class="application-field full-width required-field">
+            <div class="application-dropdown">
+              <select name="cards[fixture-university][field0]" required>
+                <option value="">Select…</option>
+                <option>Example University</option>
+                <option>Other (School Not Listed)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li class="application-question custom-question">
+        <div>
+          <div class="application-label full-width textarea"><div class="text">Describe a difficult design project and its impact. <span class="required">✱</span></div></div>
+          <div class="application-field full-width required-field">
+            <textarea class="card-field-input" name="cards[fixture-portfolio][field1]" placeholder="Type your response" required></textarea>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </form>
+</body>
+</html>

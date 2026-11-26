@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>My Experience</title></head>
+<body>
+  <main data-automation-id="applyFlowPage">
+    <h1>My Experience</h1>
+    <div data-automation-id="applyFlowMyExpPage" data-add-clicks="0" data-upload-changes="0" data-next-clicks="0"
+      data-adds-before-upload="0" data-parser-remounts="0" data-commit-remounts="0">
+      <div role="group" aria-labelledby="Work-Experience-section">
+        <h4 id="Work-Experience-section">Work Experience</h4>
+        <div><div id="experience-rows"></div></div>
+        <div><div><div><button data-automation-id="add-button">Add</button></div></div></div>
+      </div>
+      <div role="group" aria-labelledby="Resume/CV-section">
+        <h4 id="Resume/CV-section">Resume/CV</h4>
+        <div data-automation-id="formField-">
+          <div id="label522">Upload a file (5MB max)</div>
+          <div data-automation-id="attachments-FileUpload" aria-labelledby="label522">
+            <div><input type="file" hidden multiple data-automation-id="file-upload-input-ref" accept=".pdf"></div>
+            <div data-automation-id="file-upload-drop-zone">
+              <button type="button" id="resumeAttachments--attachments" data-automation-id="select-files">Select files</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="button" data-automation-id="bottom-navigation-next-button">Save and Continue</button>
+    </div>
+  </main>
+  <form action="/submitted" data-submit-events="0">
+    <button type="submit">Submit this application</button>
+  </form>
+  <script>
+    const application = document.querySelector('[data-automation-id="applyFlowMyExpPage"]');
+    const rows = document.querySelector('#experience-rows');
+    const add = application.querySelector('[data-automation-id="add-button"]');
+    const opaqueKeys = [265, 283, 406, 792];
+    const valueProperty = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+    const selectedDateParts = new WeakMap();
+    const keyboardDates = new URL(location.href).searchParams.has('keyboardDates');
+
+    function trackedText(input) {
+      let committed = input.value;
+      let lastObserved = committed;
+      // A controlled input receives ordinary DOM events. Its instance setter
+      // updates its tracker, while native changes are observed on input.
+      Object.defineProperty(input, 'value', {
+        configurable: true,
+        get() { return valueProperty.get.call(this); },
+        set(value) {
+          valueProperty.set.call(this, value);
+          lastObserved = valueProperty.get.call(this);
+        },
+      });
+      input.addEventListener('focus', () => {
+        const date = input.closest('[data-automation-id="dateInputWrapper"]');
+        if (date) requestAnimationFrame(() => selectedDateParts.set(date, input));
+      });
+      input.addEventListener('input', () => {
+        const date = input.closest('[data-automation-id="dateInputWrapper"]');
+        if (date && selectedDateParts.get(date) !== input) {
+          valueProperty.set.call(input, committed);
+          return;
+        }
+        const value = input.value;
+        const changed = value !== lastObserved;
+        if (changed) {
+          const month = input.getAttribute('data-automation-id') === 'dateSectionMonth-input';
+          committed = month && value ? String(Number(value)) : value;
+          lastObserved = committed;
+          input.dataset.committedValue = committed;
+          if (input.getAttribute('role') === 'spinbutton') {
+            const placeholder = month ? 'MM' : 'YYYY';
+            if (month) valueProperty.set.call(input, committed);
+            input.setAttribute('aria-valuetext', committed || placeholder);
+            if (committed) input.setAttribute('aria-valuenow', committed);
+            else input.removeAttribute('aria-valuenow');
+            input.previousElementSibling.textContent = month && committed ? committed.padStart(2, '0') : committed || placeholder;
+            const [monthDisplay, yearDisplay] = date.querySelectorAll('[data-automation-id$="-display"]');
+            date.previousElementSibling.textContent = `current value is ${monthDisplay.textContent}/${yearDisplay.textContent}`;
+          }
+        }
+        requestAnimationFrame(() => {
+          if (!input.isConnected) return;
+          if (!changed) {
+            valueProperty.set.call(input, committed);
+            return;
+          }
+          const replacement = input.cloneNode();
+          valueProperty.set.call(replacement, committed);
+          trackedText(replacement);
+          input.replaceWith(replacement);
+          application.dataset.commitRemounts = String(Number(application.dataset.commitRemounts) + 1);
+        });
+      });
+    }
+
+    function trackedSegmentedDate(date) {
+      const [month, year] = date.querySelectorAll('input');
+      let selected;
+      const render = (input, value) => {
+        const placeholder = input === month ? 'MM' : 'YYYY';
+        input.value = value;
+        input.setAttribute('aria-valuetext', value || placeholder);
+        if (value) input.setAttribute('aria-valuenow', value);
+        else input.removeAttribute('aria-valuenow');
+        input.previousElementSibling.textContent = value ? value.padStart(placeholder.length, '0') : placeholder;
+        date.previousElementSibling.textContent = `current value is ${month.value || 'MM'}/${year.value || 'YYYY'}`;
+      };
+      const select = input => {
+        selected = input;
+        month.parentElement.tabIndex = input === month || !input ? 0 : -1;
+        year.parentElement.tabIndex = input === year ? 0 : -1;
+        input?.focus();
+      };
+      date.addEventListener('focusout', event => {
+        if (date.contains(event.relatedTarget)) return;
+        if (month.value && !year.value) {
+          // The application serializes the sole numeric part, then reads it back as a year.
+          render(year, String(2000 + Number(month.value)));
+          render(month, '');
+        }
+        if (month.value && /^\d{4}$/.test(year.value)) {
+          const committedDate = `${month.value}/${year.value}`;
+          if (date.dataset.committedDate !== committedDate) {
+            date.dataset.committedDate = committedDate;
+            document.getElementById('error1-' + date.id)?.remove();
+          }
+        } else {
+          delete date.dataset.committedDate;
+        }
+        select(undefined);
+      });
+      for (const input of [month, year]) {
+        let tracked = input.value;
+        Object.defineProperty(input, 'value', {
+          configurable: true,
+          get() { return valueProperty.get.call(this); },
+          set(value) {
+            valueProperty.set.call(this, value);
+            tracked = valueProperty.get.call(this);
+          },
+        });
+        input.parentElement.addEventListener('click', () => select(input));
+        input.addEventListener('focus', () => {
+          input.select();
+          if (!selected) select(month);
+        });
+        input.addEventListener('input', () => {
+          const raw = input.value;
+          if (selected !== input || raw === tracked) return;
+          const value = raw ? String(Math.min(Number(raw), input === month ? 12 : 9999)) : '';
+          render(input, value);
+          if (input === month && value && (Number(value) >= 2 || raw.length === 2)) select(year);
+        });
+      }
+    }
+
+    function textField(key, property, label) {
+      const id = `${key}--${property}`;
+      return `<div data-automation-id="formField-${property}">
+        <label for="${id}">${label}</label><input id="${id}">
+      </div>`;
+    }
+
+    function dateField(key, property, label) {
+      const id = `${key}--${property}`;
+      const helpId = `helpText-${id}`;
+      const input = (part, placeholder, min, max) => `<div id="${id}-dateSection${part}"${keyboardDates ? ` tabindex="${part === 'Month' ? 0 : -1}"` : ''}>
+        <div aria-hidden="true" id="${id}-dateSection${part}-display" data-automation-id="dateSection${part}-display">${placeholder}</div>
+        <input id="${id}-dateSection${part}-input" data-automation-id="dateSection${part}-input" role="spinbutton"
+          aria-label="${part}" aria-describedby="${helpId}" aria-valuetext="${placeholder}" aria-valuemin="${min}"
+          aria-valuemax="${max}" inputmode="numeric" maxlength="${placeholder.length}">
+        </div>`;
+      return `<div data-automation-id="formField-${property}"><fieldset>
+        <legend>${label}</legend>
+        <div>
+          <div aria-hidden="true" id="${helpId}">current value is MM/YYYY</div>
+          <div id="${id}" data-automation-id="dateInputWrapper" role="group" aria-labelledby="hiddenDateValueId-${id}">
+            <div tabindex="-1">${input('Month', 'MM', 1, 12)}<span aria-hidden="true">/</span>${input('Year', 'YYYY', 1, 9999)}</div>
+          </div>
+          <div hidden id="${helpId}">use right and left arrows to navigate spin buttons</div>
+        </div>
+      </fieldset></div>`;
+    }
+
+    function addRow() {
+      const position = rows.children.length + 1;
+      const opaqueKey = opaqueKeys[position - 1];
+      if (!opaqueKey) return;
+      const key = 'workExperience-' + opaqueKey;
+      const row = document.createElement('div');
+      row.setAttribute('role', 'group');
+      row.setAttribute('aria-labelledby', `Work-Experience-${position}-panel`);
+      row.innerHTML = `<h5 id="Work-Experience-${position}-panel">Work Experience ${position}</h5>
+        ${textField(key, 'jobTitle', 'Job Title')}
+        ${textField(key, 'companyName', 'Company')}
+        ${textField(key, 'location', 'Location')}
+        <div data-automation-id="formField-currentlyWorkHere">
+          <label for="${key}--currentlyWorkHere">I currently work here</label>
+          <input type="checkbox" id="${key}--currentlyWorkHere">
+        </div>
+        ${dateField(key, 'startDate', 'From')}${dateField(key, 'endDate', 'To')}`;
+      const dates = row.querySelectorAll('[data-automation-id="dateInputWrapper"]');
+      if (keyboardDates) dates.forEach(trackedSegmentedDate);
+      for (const input of row.querySelectorAll('input:not([type="checkbox"])')) {
+        if (!keyboardDates || !input.closest('[data-automation-id="dateInputWrapper"]')) trackedText(input);
+      }
+      row.querySelector('input[type="checkbox"]').addEventListener('change', event => {
+        row.querySelector('[data-automation-id="formField-endDate"]').hidden = event.target.checked;
+      });
+      rows.append(row);
+      add.textContent = 'Add Another';
+    }
+
+    add.addEventListener('click', event => {
+      if (!event.isTrusted && !application.querySelector('[data-received-bytes]')) {
+        application.dataset.addsBeforeUpload = String(Number(application.dataset.addsBeforeUpload) + 1);
+      }
+      application.dataset.addClicks = String(Number(application.dataset.addClicks) + 1);
+      setTimeout(addRow, 35);
+    });
+    application.addEventListener('change', async event => {
+      const input = event.target;
+      if (!input.matches('[data-automation-id="file-upload-input-ref"]') || !input.files.length) return;
+      application.dataset.uploadChanges = String(Number(application.dataset.uploadChanges) + 1);
+      const file = input.files[0];
+      const wrapper = input.closest('[data-automation-id="attachments-FileUpload"]');
+      const replacement = wrapper.cloneNode(true);
+      replacement.querySelector('input[type="file"]').value = '';
+      const progress = document.createElement('progress');
+      progress.setAttribute('aria-label', 'Uploading');
+      replacement.append(progress);
+      wrapper.replaceWith(replacement);
+      const bytes = await file.arrayBuffer();
+      setTimeout(() => {
+        const location = rows.querySelector('[data-automation-id="formField-location"] input');
+        if (location) {
+          const fresh = location.cloneNode(true);
+          fresh.value = location.value;
+          trackedText(fresh);
+          location.replaceWith(fresh);
+          application.dataset.parserRemounts = String(Number(application.dataset.parserRemounts) + 1);
+        }
+        replacement.dataset.receivedBytes = [...new Uint8Array(bytes)].join(',');
+        const receipt = document.createElement('div');
+        const name = document.createElement('span');
+        name.textContent = file.name;
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.setAttribute('aria-label', 'Delete attachment');
+        remove.addEventListener('click', () => receipt.remove());
+        receipt.append(name, remove);
+        replacement.append(receipt);
+        progress.remove();
+      }, 35);
+    });
+    application.querySelector('[data-automation-id="bottom-navigation-next-button"]').addEventListener('click', () => {
+      application.dataset.nextClicks = String(Number(application.dataset.nextClicks) + 1);
+    });
+    document.querySelector('form').addEventListener('submit', event => {
+      event.preventDefault();
+      event.currentTarget.dataset.submitEvents = String(Number(event.currentTarget.dataset.submitEvents) + 1);
+    });
+  </script>
+</body>
+</html>

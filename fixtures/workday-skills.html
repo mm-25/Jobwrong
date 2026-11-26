@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Workday skills fixture</title>
+</head>
+<body data-searches="0" data-selections="0" data-submits="0" data-last-position="0">
+  <main data-automation-id="applyFlowPage">
+    <section data-automation-id="applyFlowMyExpPage">
+      <form>
+        <div data-automation-id="formField-skills" data-fkit-id="skills--skills">
+          <label for="skills--skills">Type to Add Skills</label>
+          <div data-automation-id="multiSelectContainer" id="skills-control">
+            <span data-automation-id="promptSelectionLabel"></span>
+            <div role="listbox" data-automation-id="selectedItemList" data-uxi-multiselect-id="skills-control"></div>
+            <div data-automation-id="multiselectInputContainer">
+              <input id="skills--skills" data-uxi-widget-type="selectinput" data-uxi-multiselect-id="skills-control" enterkeyhint="search">
+            </div>
+          </div>
+        </div>
+        <button type="submit">Submit application</button>
+      </form>
+    </section>
+  </main>
+  <script>
+    const input = document.getElementById('skills--skills');
+    const selected = document.querySelector('[data-automation-id="selectedItemList"]');
+    const { body } = document;
+    const scenario = new URL(location.href).searchParams.get('skills');
+    const rowHeight = 32;
+    let portal;
+
+    document.querySelector('form').addEventListener('submit', event => {
+      event.preventDefault();
+      body.dataset.submits = String(Number(body.dataset.submits) + 1);
+    });
+
+    function addSkill(id, caption) {
+      const pill = document.createElement('div');
+      pill.id = 'pill-REMOTE_SKILL-1-' + id;
+      pill.setAttribute('role', 'option');
+      pill.setAttribute('data-automation-id', 'selectedItem');
+      pill.setAttribute('aria-label', caption + ', press delete to clear value.');
+      const label = document.createElement('p');
+      label.setAttribute('data-automation-id', 'promptOption');
+      label.setAttribute('data-automation-label', caption);
+      label.textContent = caption;
+      const clear = document.createElement('div');
+      clear.setAttribute('data-automation-id', 'DELETE_charm');
+      clear.setAttribute('role', 'presentation');
+      clear.setAttribute('aria-hidden', 'true');
+      clear.tabIndex = -1;
+      clear.addEventListener('click', () => pill.remove());
+      pill.append(label, clear);
+      selected.append(pill);
+    }
+
+    function showResults() {
+      portal?.remove();
+      portal = document.createElement('div');
+      portal.setAttribute('data-automation-id', 'responsiveMonikerPrompt');
+      portal.setAttribute('data-associated-widget', 'skills-control');
+      portal.setAttribute('data-automation-type', 'multiSelectPrompt');
+      portal.setAttribute('data-uxi-prompt-type', 'multiselect');
+      portal.innerHTML = `<div data-uxi-multiselectlist-issearch="true">
+        <div role="listbox" data-automation-id="activeListContainer" aria-multiselectable="true" tabindex="-1"
+          class="ReactVirtualized__Grid ReactVirtualized__List" style="height: 160px; overflow: auto;">
+          <div role="presentation" class="ReactVirtualized__Grid__innerScrollContainer" style="position: relative;"></div>
+        </div>
+      </div>`;
+      const menu = portal.querySelector('[role="listbox"]');
+      const content = menu.firstElementChild;
+      const captions = Array.from({ length: 26 }, (_, index) => 'Related skill ' + (index + 1));
+      captions[0] = 'User Experience Design';
+      captions[21] = 'User Experience (UX)';
+      if (scenario === 'duplicate') captions[1] = 'User Experience';
+      content.style.height = captions.length * rowHeight + 'px';
+      function render() {
+        const first = Math.max(0, Math.floor(menu.scrollTop / rowHeight) - 1);
+        const last = Math.min(captions.length, first + 8);
+        body.dataset.lastPosition = String(Math.max(Number(body.dataset.lastPosition), last));
+        content.replaceChildren();
+        for (let index = first; index < last; index++) {
+          const caption = captions[index];
+          const option = document.createElement('div');
+          const id = 7000 + index;
+          option.id = 'menuItem-REMOTE_SKILL-1-' + id;
+          option.setAttribute('role', 'option');
+          option.setAttribute('data-automation-id', 'menuItem');
+          option.setAttribute('aria-posinset', String(index + 1));
+          option.setAttribute('aria-setsize', String(captions.length));
+          option.setAttribute('aria-label', caption + ' not checked');
+          option.style.cssText = `position:absolute;top:${index * rowHeight}px;height:${rowHeight}px;width:100%;`;
+          option.innerHTML = `<div data-automation-id="promptLeafNode" data-uxi-multiselect-id="skills-control"
+              data-uxi-multiselectlistitem-hassidecharm="false" data-uxi-multiselectlistitem-isselected="false">
+              <input type="checkbox" aria-checked="false" data-automation-id="checkboxPanel">
+              <span data-automation-id="promptOption"></span>
+            </div>`;
+          const label = option.querySelector('[data-automation-id="promptOption"]');
+          label.setAttribute('data-automation-label', caption);
+          label.textContent = caption;
+          option.querySelector('input').addEventListener('click', () => {
+            body.dataset.selections = String(Number(body.dataset.selections) + 1);
+            addSkill(id, caption);
+          });
+          content.append(option);
+        }
+      }
+      menu.addEventListener('scroll', render);
+      menu.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeResults();
+      });
+      body.append(portal);
+      render();
+      input.setAttribute('data-automation-id', 'searchBox');
+      menu.focus();
+    }
+
+    function closeResults() {
+      portal?.remove();
+      input.removeAttribute('data-automation-id');
+    }
+
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeResults();
+      if (event.key === 'Enter' && input.value) {
+        event.preventDefault();
+        body.dataset.searches = String(Number(body.dataset.searches) + 1);
+        showResults();
+      }
+    });
+    addSkill(6800, 'Design Research');
+  </script>
+</body>
+</html>

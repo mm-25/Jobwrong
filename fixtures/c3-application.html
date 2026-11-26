@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Apply at C3 AI</title></head>
+<body>
+  <main>
+    <h1>Apply for Product Designer</h1>
+    <form class="gh-apply-form" action="/submitted" method="post" novalidate>
+      <div class="field">
+        <label class="labell" for="gh-first_name">First Name<span class="required">*</span></label>
+        <div class="control"><input id="gh-first_name" name="first_name" type="text"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-last_name">Last Name<span class="required">*</span></label>
+        <div class="control"><input id="gh-last_name" name="last_name" type="text"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-email">Email<span class="required">*</span></label>
+        <div class="control"><input id="gh-email" name="email" type="email"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-country_short_name">Country<span class="required">*</span></label>
+        <div class="control"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-phone">Phone<span class="required">*</span></label>
+        <div class="control"><input id="gh-phone" name="phone" type="tel"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-location">Location (City)<span class="required">*</span></label>
+        <div class="control"><input id="gh-location" name="location" type="text"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-resume">Resume/CV<span class="required">*</span></label>
+        <div class="control">
+          <span class="hint">Attach a file</span>
+          <input id="gh-resume" name="resume" type="file" accept=".pdf,.doc,.docx">
+        </div>
+        <div class="control">
+          <span class="hint">Or paste as text</span>
+          <textarea id="gh-resume_text-alt" name="resume_text"></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-portfolio">Portfolio Link<span class="required">*</span></label>
+        <div class="control"><input id="gh-portfolio" name="portfolio" type="text"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-portfolio_password">Portfolio Password (if needed)<span class="required">*</span></label>
+        <div class="control"><input id="gh-portfolio_password" name="portfolio_password" type="text"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-linkedin">LinkedIn Profile<span class="required">*</span></label>
+        <div class="control"><input id="gh-linkedin" name="linkedin" type="text"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-source">How did you hear about C3 AI?<span class="required">*</span></label>
+        <div class="control"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-question_38508358002">Where are you currently located?<span class="required">*</span></label>
+        <div class="control"><input id="gh-question_38508358002" name="question_38508358002" type="text"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-onsite">Are you willing to work from our Redwood City CA office 5x week?<span class="required">*</span></label>
+        <div class="control"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-sponsorship">Will you now or in the future require visa sponsorship?<span class="required">*</span></label>
+        <div class="control"></div>
+      </div>
+      <div class="field">
+        <label class="labell">Read the applicant privacy policy for details on how we collect, retain, process, and share your personal data when you apply for a role.<span class="required">*</span></label>
+        <div class="checkbox-group">
+          <label class="checkbox"><input name="privacy_accept" type="checkbox">I Accept</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-sms_consent">Do you consent to receive SMS messages about your application?<span class="required">*</span></label>
+        <div class="control"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-gender">Gender</label>
+        <div class="control"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-hispanic_latino">Are you Hispanic/Latino?</label>
+        <div class="control"></div>
+      </div>
+      <div class="field">
+        <label class="labell" for="gh-veteran_status">Veteran Status</label>
+        <div class="control"></div>
+      </div>
+      <button type="submit">Submit application</button>
+    </form>
+  </main>
+  <script>
+    const form = document.querySelector('.gh-apply-form');
+    const committedChoices = new Map();
+    const fixtureEvents = { clicks: 0, edits: 0, listboxOpens: 0, submitEvents: 0, submitButtonClicks: 0 };
+    Object.defineProperty(window, 'fixtureEvents', { value: fixtureEvents });
+    form.addEventListener('click', (event) => {
+      fixtureEvents.clicks++;
+      if (event.target.closest('[type="submit"]')) fixtureEvents.submitButtonClicks++;
+    }, { capture: true });
+    form.addEventListener('input', () => fixtureEvents.edits++, { capture: true });
+    form.addEventListener('change', () => fixtureEvents.edits++, { capture: true });
+    form.addEventListener('submit', (event) => {
+      fixtureEvents.submitEvents++;
+      event.preventDefault();
+    });
+    const yesNo = [['yes', 'Yes'], ['no', 'No']];
+    const choices = {
+      country_short_name: [['UM', 'United States Minor Outlying Islands'], ['US', 'United States'], ['CA', 'Canada']],
+      source: [['web', 'Company website'], ['referral', 'Employee referral']],
+      onsite: yesNo,
+      sponsorship: yesNo,
+      sms_consent: yesNo,
+      gender: [['male', 'Male'], ['female', 'Female'], ['decline', 'Decline to self-identify']],
+      hispanic_latino: yesNo,
+      veteran_status: [['protected', 'Protected veteran'], ['decline', 'Decline to self-identify']],
+    };
+
+    for (const [name, options] of Object.entries(choices)) {
+      const id = `gh-${name}`;
+      const control = form.querySelector(`label[for="${id}"]`).nextElementSibling;
+      control.innerHTML = `
+        <div class="typeahead-control">
+          <input id="${id}" type="text" role="combobox" aria-autocomplete="list"
+            aria-controls="${id}-listbox" aria-expanded="false" placeholder="Select..." name="${name}">
+          <button type="button" aria-label="Toggle ${name} options">▼</button>
+        </div>`;
+      const combo = control.querySelector('input');
+      const toggle = control.querySelector('button');
+      let selected = '';
+      let query = '';
+      let open = false;
+
+      function render() {
+        combo.value = query;
+        combo.setAttribute('aria-expanded', String(open));
+        control.querySelector('[role="listbox"]')?.remove();
+        if (!open) return;
+        fixtureEvents.listboxOpens++;
+        const list = document.createElement('div');
+        list.className = 'typeahead-menu';
+        list.id = `${id}-listbox`;
+        list.setAttribute('role', 'listbox');
+        for (const [value, label] of options) {
+          if (!selected && !label.toLowerCase().includes(query.toLowerCase())) continue;
+          const option = document.createElement('button');
+          option.type = 'button';
+          option.setAttribute('role', 'option');
+          option.setAttribute('aria-selected', String(value === selected));
+          option.textContent = label;
+          option.addEventListener('click', () => {
+            selected = value;
+            committedChoices.set(name, value);
+            query = label;
+            open = false;
+            requestAnimationFrame(render);
+          });
+          list.append(option);
+        }
+        control.append(list);
+      }
+
+      function setOpen(next) {
+        open = next;
+        requestAnimationFrame(render);
+      }
+
+      toggle.addEventListener('click', () => setOpen(!open));
+      combo.addEventListener('click', () => setOpen(true));
+      combo.addEventListener('input', () => {
+        selected = '';
+        committedChoices.delete(name);
+        query = combo.value;
+        setOpen(true);
+      });
+      combo.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown') setOpen(true);
+        if (event.key === 'Escape') setOpen(false);
+      });
+      combo.addEventListener('blur', () => {
+        if (!open) requestAnimationFrame(render);
+      });
+    }
+
+    form.addEventListener('formdata', ({ formData }) => {
+      for (const name of Object.keys(choices)) formData.set(name, committedChoices.get(name) ?? '');
+    });
+  </script>
+</body>
+</html>

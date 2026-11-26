@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Example job application</title>
+  <style>
+    body { max-width: 620px; margin: 2rem auto; padding: 0 1rem; font: 16px/1.5 system-ui, sans-serif; }
+    form { display: grid; gap: 1rem; }
+    fieldset, form > div { margin: 0; }
+    [role="listbox"] { display: flex; gap: .5rem; margin-top: .5rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Example job application</h1>
+    <form action="/submitted" method="post">
+      <div>
+        <label for="first-name">First name</label>
+        <input id="first-name" name="firstName" autocomplete="given-name">
+      </div>
+      <div>
+        <label for="relocation">Is moving for this position off the table?</label>
+        <select id="relocation" name="moving">
+          <option value="">Select one</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <fieldset>
+        <legend>Could you lawfully work in Canada without additional permission?</legend>
+        <label><input id="canada-authorized" type="radio" name="workAuthorization" value="yes">Yes</label>
+        <label><input id="canada-not-authorized" type="radio" name="workAuthorization" value="no">No</label>
+      </fieldset>
+      <div>
+        <span id="gender-caption">Select one</span>
+        <p id="gender-help">Which gender category best reflects how you identify?</p>
+        <button type="button" id="gender" role="combobox" aria-labelledby="gender-caption" aria-describedby="gender-help"
+          aria-haspopup="listbox" aria-controls="gender-options" aria-expanded="false">Select one</button>
+        <button type="button" id="clear-gender" aria-label="Clear selection" aria-controls="gender" hidden>Clear</button>
+      </div>
+      <div><button id="submit" type="submit">Submit application</button></div>
+    </form>
+  </main>
+  <script>
+    const trigger = document.querySelector('#gender');
+    const clear = document.querySelector('#clear-gender');
+    const form = document.querySelector('form');
+    const fixtureEvents = { menuOpens: 0, selections: [], changes: 0, submitEvents: 0, submitButtonClicks: 0 };
+    Object.defineProperty(window, 'fixtureEvents', { value: fixtureEvents });
+    form.addEventListener('submit', event => {
+      fixtureEvents.submitEvents++;
+      event.preventDefault();
+    });
+    document.querySelector('#submit').addEventListener('click', () => fixtureEvents.submitButtonClicks++);
+    for (const type of ['input', 'change']) trigger.addEventListener(type, () => fixtureEvents.changes++);
+
+    let pendingMenu;
+    function closeMenu() {
+      window.clearTimeout(pendingMenu);
+      document.querySelector('#gender-options')?.remove();
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    trigger.addEventListener('click', () => {
+      if (trigger.getAttribute('aria-expanded') === 'true') {
+        closeMenu();
+        return;
+      }
+      fixtureEvents.menuOpens++;
+      trigger.setAttribute('aria-expanded', 'true');
+      pendingMenu = window.setTimeout(() => {
+        const list = document.createElement('div');
+        list.id = 'gender-options';
+        list.setAttribute('role', 'listbox');
+        list.setAttribute('aria-labelledby', 'gender-caption');
+        for (const label of ['Woman', 'Man', 'Prefer not to answer']) {
+          const option = document.createElement('button');
+          option.type = 'button';
+          option.setAttribute('role', 'option');
+          option.textContent = label;
+          option.addEventListener('click', () => {
+            trigger.textContent = label;
+            fixtureEvents.selections.push(label);
+            clear.hidden = false;
+            closeMenu();
+          });
+          list.append(option);
+        }
+        trigger.after(list);
+      }, 40);
+    });
+    trigger.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMenu(); });
+    clear.addEventListener('click', () => {
+      trigger.textContent = 'Select one';
+      fixtureEvents.selections.push('');
+      clear.hidden = true;
+      closeMenu();
+    });
+  </script>
+</body>
+</html>

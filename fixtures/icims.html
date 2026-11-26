@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Career Portal Candidate Profile</title></head>
+<body>
+  <main class="iCIMS_MainWrapper">
+    <h1>Candidate Profile</h1>
+    <form id="iCIMS_Application" action="/submitted" method="post">
+      <div class="iCIMS_FieldRow">
+        <label for="PersonProfileFields.FirstName">First Name</label>
+        <input id="PersonProfileFields.FirstName" name="PersonProfileFields.FirstName" required>
+      </div>
+      <div class="iCIMS_FieldRow">
+        <label for="PersonProfileFields.LastName">Last Name</label>
+        <input id="PersonProfileFields.LastName" name="PersonProfileFields.LastName" required>
+      </div>
+      <div class="iCIMS_FieldRow">
+        <p id="sponsorship-label">Will you now or in the future require sponsorship?</p>
+        <select name="CandidateFields.Sponsorship" aria-labelledby="sponsorship-label" required>
+          <option value="">Choose one</option><option value="Y">Yes</option><option value="N">No</option>
+        </select>
+      </div>
+      <div class="iCIMS_FieldRow">
+        <label>Additional information <textarea name="CandidateFields.TeamMotivation" required></textarea></label>
+      </div>
+      <div class="iCIMS_FieldRow">
+        <label>Additional information <textarea name="CandidateFields.PreferredMentorship" required></textarea></label>
+      </div>
+      <label>I consent to a background check <input name="CandidateFields.BackgroundConsent" type="checkbox" required></label>
+      <label>Electronic signature <input name="CandidateFields.Signature" required></label>
+      <label>Create password <input name="CandidateFields.Password" type="password" required></label>
+      <button type="submit">Submit application</button>
+    </form>
+  </main>
+</body>
+</html>

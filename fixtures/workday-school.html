@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Workday education search</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 50rem; padding: 0 1rem; }
+    label { display: block; margin-block-start: 1rem; }
+    [data-automation-id="promptLeafNode"] { cursor: pointer; }
+    [data-automation-id="DELETE_charm"] { display: inline-block; width: 1rem; height: 1rem; cursor: pointer; }
+  </style>
+</head>
+<body data-search="0" data-commits="0" data-submits="0">
+  <main data-automation-id="applyFlowPage">
+    <div data-automation-id="applyFlowMyExpPage">
+      <form action="/submitted">
+        <div role="group" aria-labelledby="Education-section">
+          <h4 id="Education-section">Education</h4>
+          <div role="group" aria-labelledby="Education-1-panel">
+            <h5 id="Education-1-panel">Education 1</h5>
+            <div data-automation-id="formField-school">
+              <label for="education-5--school">School or University</label>
+              <div id="school-widget" data-automation-id="multiSelectContainer">
+                <div data-automation-id="multiselectInputContainer">
+                  <div data-automation-id="promptSelectionLabel"></div>
+                  <p id="school-instruction" data-automation-id="promptAriaInstruction" aria-hidden="true">0 items selected</p>
+                  <input id="education-5--school" data-uxi-widget-type="selectinput" data-uxi-multiselect-id="school-widget"
+                    enterkeyhint="search" aria-describedby="school-instruction">
+                </div>
+              </div>
+            </div>
+            <div data-automation-id="formField-degree">
+              <label for="education-5--degree">Degree</label>
+              <button type="button" aria-haspopup="listbox" aria-label="Degree Master of Science Required"
+                id="education-5--degree" name="degree" value="MS">Master of Science</button>
+            </div>
+          </div>
+        </div>
+        <button type="submit">Submit application</button>
+      </form>
+    </div>
+  </main>
+  <script>
+    const campusResults = [
+      'University of Michigan', 'University of Michigan - Dearborn', 'U of Michigan Ann Arbor',
+      'The University of Michigan, Ann Arbor', 'University of Michigan - Ann Arbor',
+    ];
+    const cancel = new URLSearchParams(location.search).has('manual');
+    const form = document.querySelector('form');
+    const input = document.querySelector('#education-5--school');
+    const widget = document.getElementById('school-widget');
+    const announcement = document.getElementById('school-instruction');
+    let portal;
+    let controlledValue = '';
+    const nativeValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+
+    // Model a controlled input that only records a typed value after its input event.
+    Object.defineProperty(input, 'value', {
+      get() { return nativeValue.get.call(this); },
+      set(value) {
+        controlledValue = value;
+        nativeValue.set.call(this, value);
+      },
+    });
+    input.addEventListener('input', () => { controlledValue = input.value; });
+
+    function close() {
+      portal.remove();
+      input.removeAttribute('data-automation-id');
+      announcement.textContent = '0 items selected';
+    }
+
+    function select(label) {
+      close();
+      input.value = '';
+      document.body.dataset.commits = String(Number(document.body.dataset.commits) + 1);
+      announcement.textContent = '1 item selected, ' + label;
+      widget.insertAdjacentHTML('afterbegin', `<ul role="listbox" data-automation-id="selectedItemList" data-uxi-multiselect-id="school-widget">
+        <li role="option" data-automation-id="selectedItem" aria-label="${label}, press delete to clear value.">
+          <div data-automation-id="DELETE_charm" role="presentation" aria-hidden="true" tabindex="-1"></div>
+          <span data-automation-id="promptOption">${label}</span>
+        </li>
+      </ul>`);
+      widget.querySelector('[data-automation-id="DELETE_charm"]').addEventListener('click', () => {
+        widget.querySelector('[data-automation-id="selectedItemList"]').remove();
+        announcement.textContent = '0 items selected';
+      });
+    }
+
+    function showPortal(mode, labels = []) {
+      portal?.remove();
+      portal = document.createElement('div');
+      portal.dataset.automationId = 'responsiveMonikerPrompt';
+      portal.dataset.associatedWidget = 'school-widget';
+      if (mode === 'busy') {
+        portal.setAttribute('aria-busy', 'true');
+      } else {
+        portal.dataset.automationType = 'singleSelectPrompt';
+        portal.dataset.uxiPromptType = 'singleselect';
+        portal.innerHTML = `${labels.length > 1 ? `<div data-automation-id="multiSelectHeader"
+          data-uxi-widget-type="multiselectlistheader" data-uxi-multiselect-id="school-widget"
+          data-uxi-multiselectlistheader-clickable="false">
+          <div data-automation-id="promptTitle" aria-hidden="true" title="Search Results">Search Results</div>
+          <div>(${labels.length})</div>
+        </div>` : ''}<div data-uxi-widget-type="multiselectlist" data-uxi-multiselectlist-isresponsive="false"
+          data-uxi-multiselectlist-issearch="${mode === 'results'}">
+          <div role="listbox" tabindex="-1" data-automation-id="activeListContainer">
+            ${labels.length ? labels.map((label, index) => `<div role="option" data-automation-id="menuItem"
+              aria-label="${label} not checked" aria-selected="false" aria-posinset="${index + 1}"
+              aria-setsize="${labels.length}" id="menuItem-campus-${index}">
+                <div data-automation-id="promptLeafNode" data-uxi-multiselect-id="school-widget"
+                  data-uxi-multiselectlistitem-hassidecharm="false">
+                  <div data-automation-id="promptOption">${label}</div>
+                </div>
+              </div>`).join('') : '<div>No Items</div>'}
+          </div>
+        </div>`;
+        portal.querySelectorAll('[data-automation-id="promptLeafNode"]').forEach((option, index) =>
+          option.addEventListener('click', () => select(labels[index])));
+      }
+      form.append(portal);
+    }
+
+    input.addEventListener('click', () => {
+      if (portal?.isConnected) return;
+      announcement.textContent = 'Expanded';
+      showPortal('open');
+    });
+    input.addEventListener('keydown', event => {
+      if (!portal?.isConnected) return;
+      if (event.key === 'Escape') close();
+      if (event.key !== 'Enter' || event.keyCode !== 13 || !controlledValue || controlledValue !== input.value) return;
+      event.preventDefault();
+      const query = controlledValue;
+      input.dataset.automationId = 'searchBox';
+      document.body.dataset.search = String(Number(document.body.dataset.search) + 1);
+      document.body.dataset.query = query;
+      showPortal('busy');
+      setTimeout(() => {
+        showPortal('results', query === 'Ann Arbor' ? campusResults : []);
+        portal.querySelector('[role=listbox]').focus();
+        if (cancel) {
+          input.value = 'Applicant typed this';
+          input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }));
+        }
+      }, 30);
+    });
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      document.body.dataset.submits = String(Number(document.body.dataset.submits) + 1);
+    });
+  </script>
+</body>
+</html>

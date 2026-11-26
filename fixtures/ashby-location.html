@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Product Designer application at Example Studio</title>
+</head>
+<body>
+  <main role="tabpanel" aria-label="Application">
+    <h1>Product Designer application</h1>
+    <div class="ashby-application-form-field-entry" data-field-path="_systemfield_location">
+      <label for="_systemfield_location">Location<span aria-hidden="true">*</span></label>
+      <div class="ashby-application-form-input-autocomplete-container">
+        <input type="text" role="combobox" aria-autocomplete="list" aria-haspopup="listbox"
+          aria-expanded="false" placeholder="Start typing..." class="ashby-application-form-input-autocomplete">
+        <button><span aria-hidden="true">▾</span></button>
+      </div>
+      <input type="hidden" id="selected-location">
+    </div>
+    <button id="submit-application" type="submit">Submit application</button>
+  </main>
+  <aside role="listbox" id="unrelated-location-options" aria-label="Unrelated location picker">
+    <div role="option">Detroit, Michigan, United States</div>
+  </aside>
+  <script>
+    const mode = new URLSearchParams(location.search).get('mode');
+    const field = document.querySelector('[data-field-path="_systemfield_location"]');
+    const input = field.querySelector('input[role="combobox"]');
+    const label = field.querySelector('label');
+    const toggle = field.querySelector('button');
+    const selected = field.querySelector('#selected-location');
+    const events = { opens: 0, queries: [], choices: [], unrelatedClicks: 0, submitClicks: 0, submits: 0 };
+    window.locationFixtureEvents = events;
+    const releaseResults = new Promise(resolve => { window.releaseFixtureLocationResults = resolve; });
+    let portal;
+    let latestQuery = 0;
+    let openTimer;
+
+    document.querySelector('#unrelated-location-options').addEventListener('click', () => { events.unrelatedClicks++; });
+    document.querySelector('#submit-application').addEventListener('click', () => { events.submitClicks++; });
+    document.addEventListener('submit', event => { event.preventDefault(); events.submits++; });
+
+    function setPopupVisibility(expanded) {
+      input.setAttribute('aria-expanded', String(expanded));
+      for (const item of [label, toggle]) {
+        if (expanded) {
+          item.setAttribute('aria-hidden', 'true');
+          item.setAttribute('data-aria-hidden', 'true');
+        } else {
+          item.removeAttribute('aria-hidden');
+          item.removeAttribute('data-aria-hidden');
+        }
+      }
+    }
+
+    function closePopup() {
+      clearTimeout(openTimer);
+      latestQuery++;
+      portal?.remove();
+      portal = undefined;
+      input.removeAttribute('aria-controls');
+      setPopupVisibility(false);
+    }
+
+    toggle.addEventListener('click', () => {
+      if (input.getAttribute('aria-expanded') === 'true') return;
+      events.opens++;
+      setPopupVisibility(true);
+      openTimer = setTimeout(() => {
+        portal = document.createElement('div');
+        portal.setAttribute('role', 'listbox');
+        portal.setAttribute('aria-label', 'Location suggestions');
+        portal.id = ':r0:';
+        document.body.append(portal);
+        input.setAttribute('aria-controls', portal.id);
+      }, 30);
+    });
+
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closePopup();
+    });
+
+    input.addEventListener('input', async event => {
+      const value = input.value;
+      const queryNumber = ++latestQuery;
+      events.queries.push({ value, trusted: event.isTrusted });
+      if (!portal) return;
+      portal.replaceChildren();
+      if (!value.startsWith('Detroit')) return;
+      if (mode === 'pending') await releaseResults;
+      else await new Promise(resolve => setTimeout(resolve, 45));
+      if (!portal || queryNumber !== latestQuery) return;
+
+      const places = [['wrong-city', 'Detroit Lakes, Minnesota, United States'], ['wrong-region', 'Detroit, Minnesota, United States']];
+      if (mode !== 'no-match') places.push(['exact-detroit', 'Detroit, MI, USA']);
+      for (const [id, location] of places) {
+        const option = document.createElement('div');
+        option.setAttribute('role', 'option');
+        option.id = `location-option-${id}`;
+        option.dataset.value = id;
+        option.textContent = location;
+        option.addEventListener('click', () => {
+          events.choices.push(id);
+          selected.value = id;
+          input.value = location;
+          closePopup();
+        });
+        portal.append(option);
+      }
+    });
+  </script>
+</body>
+</html>

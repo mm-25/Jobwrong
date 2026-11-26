@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Example Studio application</title>
+  <style>.iti__flag { display: inline-block; width: 16px; height: 10px; }</style>
+</head>
+<body>
+  <template id="lever">
+    <div class="section page-centered posting-header">
+      <h1>Product Designer</h1>
+      <div class="posting-categories"><div class="location">Washington, D.C.</div><div class="department">Design</div></div>
+    </div>
+    <form id="application-form">
+      <ul>
+        <li class="application-question custom-question"><div>
+          <div class="application-label"><div class="text">Preferred Name | What would you like us to call you?</div></div>
+          <div class="application-field"><input id="preferred-name" name="cards[applicant][field0]"></div>
+        </div></li>
+        <li class="application-question custom-question"><div>
+          <div class="application-label"><div class="text">Which university are you currently attending or did you last attend? Please select "Other (School Not Listed)" if your school is not listed. <span class="required">✱</span></div></div>
+          <div class="application-field required-field"><div class="application-dropdown">
+            <select id="university" name="cards[education][field0]" required>
+              <option value="">Select…</option>
+              <option value="medical">Example Medical School</option>
+              <option value="religious">College of Religious Studies</option>
+              <option value="michigan-ann-arbor">University of Michigan - Ann Arbor</option>
+              <option value="michigan-dearborn">University of Michigan - Dearborn</option>
+              <option value="michigan-flint">University of Michigan - Flint</option>
+              <option value="other">Other - School Not Listed</option>
+            </select>
+          </div></div>
+        </div></li>
+        <li class="application-question custom-question"><div>
+          <div class="application-label"><div class="text">Please include your intended graduation year for the degree or relevant learning program that you are currently pursuing or have completed. <span class="required">✱</span></div></div>
+          <div class="application-field required-field"><div class="application-dropdown">
+            <select id="graduation-year" name="cards[education][field1]" required>
+              <option value="">Select…</option><option value="2027">2027</option><option value="2028">2028</option><option value="other">Other</option>
+            </select>
+          </div></div>
+        </div></li>
+        <li class="application-question custom-question"><div>
+          <div class="application-label"><div class="text">Are you legally authorized to work in the country for which you are applying? <span class="required">✱</span></div></div>
+          <div class="application-field required-field"><ul>
+            <li><label><input id="work-yes" type="radio" name="cards[work-authorization][field0]" value="Yes" required>Yes</label></li>
+            <li><label><input id="work-no" type="radio" name="cards[work-authorization][field0]" value="No">No</label></li>
+          </ul></div>
+        </div></li>
+        <li class="application-question custom-question"><div>
+          <div class="application-label"><div class="text">How did you hear about this opportunity?</div></div>
+          <div class="application-field"><div class="application-dropdown">
+            <select id="referral" name="cards[referral][field0]">
+              <option value="">Select…</option><option value="recruiter">LinkedIn Recruiter</option><option value="linkedin">LinkedIn</option>
+            </select>
+          </div></div>
+        </div></li>
+      </ul>
+      <label>Current location <input id="location-input" value="Manual location"></label>
+      <button type="submit">Submit application</button>
+    </form>
+  </template>
+
+  <template id="greenhouse">
+    <h1>Product Designer</h1>
+    <form id="application-form">
+      <label>First name <input value="Manual first name"></label>
+      <fieldset>
+        <legend>Phone</legend>
+        <label id="country-label" for="country">Country</label>
+        <div id="dialing-country" class="select-shell" data-input="country" data-name="country"></div>
+        <label>Phone <input id="phone" type="tel" autocomplete="tel" required></label>
+      </fieldset>
+      <label id="question_501-label" for="question_501">Are you legally authorized to work in the U.S. on a full-time basis?</label>
+      <div id="full-time" class="select-shell" data-input="question_501" data-name="work_authorization"></div>
+      <button type="submit">Submit application</button>
+    </form>
+  </template>
+
+  <template id="react-select">
+    <div>
+      <div class="select__control">
+        <div class="select__value-container">
+          <div class="select__placeholder">Select...</div>
+          <div class="select__input-container">
+            <input class="select__input" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+          </div>
+        </div>
+        <div class="select__indicators">
+          <button class="icon-button icon-button--sm" type="button" aria-label="Toggle flyout" tabindex="-1">▾</button>
+        </div>
+      </div>
+    </div>
+    <input type="hidden">
+  </template>
+
+  <script>
+    const isLever = location.hostname === 'jobs.lever.co';
+    document.body.append(document.getElementById(isLever ? 'lever' : 'greenhouse').content.cloneNode(true));
+    const form = document.querySelector('form');
+    form.dataset.submitEvents = '0';
+    form.dataset.submitClicks = '0';
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      form.dataset.submitEvents = String(Number(form.dataset.submitEvents) + 1);
+    });
+    form.querySelector('button[type="submit"]').addEventListener('click', () => {
+      form.dataset.submitClicks = String(Number(form.dataset.submitClicks) + 1);
+    });
+
+    const choices = {
+      country: [['ca', 'Canada +1'], ['us', 'United States +1'], ['gb', 'United Kingdom +44']],
+      work_authorization: [['yes', 'Yes'], ['no', 'No']],
+    };
+    for (const shell of form.querySelectorAll('.select-shell')) {
+      shell.append(document.getElementById('react-select').content.cloneNode(true));
+      const { input: id, name } = shell.dataset;
+      const input = shell.querySelector('[role="combobox"]');
+      const submitted = shell.querySelector('input[type="hidden"]');
+      const wrapper = shell.querySelector('.select__control').parentElement;
+      const trigger = shell.querySelector('button');
+      const listId = `react-select-${id}-listbox`;
+      input.id = id;
+      input.setAttribute('aria-labelledby', `${id}-label`);
+      submitted.name = name;
+      let renderTimer;
+
+      function close() {
+        clearTimeout(renderTimer);
+        document.getElementById(listId)?.remove();
+        input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-controls');
+      }
+
+      function open() {
+        if (input.getAttribute('aria-expanded') === 'true') return;
+        input.setAttribute('aria-expanded', 'true');
+        input.setAttribute('aria-controls', listId);
+        renderTimer = setTimeout(() => {
+          const menu = document.createElement('div');
+          menu.id = listId;
+          menu.className = 'select__menu-list';
+          menu.setAttribute('role', 'listbox');
+          choices[name].forEach(([value, label], index) => {
+            const option = document.createElement('div');
+            option.id = `react-select-${id}-option-${index}`;
+            option.setAttribute('role', 'option');
+            option.setAttribute('aria-selected', String(submitted.value === value));
+            let flag;
+            if (name === 'country') {
+              flag = document.createElement('div');
+              flag.className = `iti__flag iti__${value}`;
+              option.append(flag, label);
+            } else {
+              option.textContent = label;
+            }
+            option.addEventListener('click', () => {
+              const display = shell.querySelector('.select__placeholder, .select__single-value');
+              display.className = 'select__single-value';
+              if (flag) {
+                const dial = document.createElement('span');
+                dial.textContent = label.slice(label.lastIndexOf('+'));
+                display.replaceChildren(flag.cloneNode(), dial);
+              } else {
+                display.textContent = label;
+              }
+              submitted.value = value;
+              close();
+            });
+            menu.append(option);
+          });
+          shell.append(menu);
+        }, 90);
+      }
+
+      // As on Greenhouse, the button cancels click and the wrapper controls its menu.
+      trigger.addEventListener('click', event => event.preventDefault());
+      wrapper.addEventListener('mouseup', event => {
+        if (event.button !== 0 || event.buttons !== 0) return;
+        if (input.getAttribute('aria-expanded') === 'true') close();
+        else open();
+      });
+      wrapper.addEventListener('keyup', event => {
+        if (event.code === 'Escape' || event.code === 'Tab') close();
+        else if (event.code !== 'Enter') open();
+      });
+      input.addEventListener('blur', close);
+    }
+  </script>
+</body>
+</html>

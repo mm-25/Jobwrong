@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profile · JobRight Local</title>
+  <link rel="stylesheet" href="extension.css">
+  <script defer src="options.js"></script>
+</head>
+<body class="options">
+  <header class="options-header">
+    <div class="options-header-inner">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>JobRight Local</div>
+      <div class="options-save">
+        <p id="profile-status" class="notice" role="status" aria-atomic="true" hidden></p>
+        <button type="submit" class="button primary" id="save-profile" form="profile-form" disabled>Save profile</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="options-layout">
+    <aside class="options-side">
+      <nav aria-label="Profile sections">
+        <a href="#contact">Contact &amp; links</a>
+        <a href="#experience">Employment &amp; education</a>
+        <a href="#work-authorization">Work authorization</a>
+        <a href="#application-defaults">Application defaults</a>
+        <a href="#saved-answers">Saved answers</a>
+        <a href="#resume">Resume</a>
+        <a href="#ai-settings">AI settings</a>
+        <a href="#local-data">Profile data</a>
+      </nav>
+    </aside>
+
+    <div class="options-content">
+      <div class="options-intro">
+        <h1>Application profile</h1>
+        <p>Keep the details you reuse on applications in one place. Your profile is stored in this browser.</p>
+      </div>
+
+      <form id="profile-form">
+        <fieldset id="profile-fields" disabled>
+          <legend class="sr-only">Application profile details</legend>
+
+          <section id="contact" class="profile-section" aria-labelledby="contact-title">
+            <div class="section-intro">
+              <h2 id="contact-title">Contact &amp; links</h2>
+            </div>
+            <div id="personal-fields" class="field-grid"></div>
+          </section>
+
+          <section id="experience" class="profile-section" aria-labelledby="experience-title">
+            <div class="section-intro">
+              <h2 id="experience-title">Employment &amp; education</h2>
+            </div>
+            <div class="records-section">
+              <div class="records-head">
+                <h3>Employment</h3>
+                <button type="button" class="button secondary" id="add-employment">Add employment</button>
+              </div>
+              <div id="employment-list" class="record-list"></div>
+            </div>
+            <div class="records-section">
+              <div class="records-head">
+                <h3>Education</h3>
+                <button type="button" class="button secondary" id="add-education">Add education</button>
+              </div>
+              <div id="education-list" class="record-list"></div>
+            </div>
+            <div class="records-section">
+              <div class="field">
+                <label class="field-label" for="skills">Skills</label>
+                <textarea id="skills" rows="4" aria-describedby="skills-hint"></textarea>
+                <p id="skills-hint" class="hint">Enter one skill per line. Autofill uses this list; uploading a résumé does not populate it.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="work-authorization" class="profile-section" aria-labelledby="authorization-title">
+            <div class="section-intro section-intro-action">
+              <div>
+                <h2 id="authorization-title">Work authorization</h2>
+                <p>Add a country and the answers you want to reuse.</p>
+              </div>
+              <button type="button" class="button secondary" id="add-work-authorization">Add country</button>
+            </div>
+            <div id="work-authorization-list" class="record-list"></div>
+          </section>
+
+          <section id="application-defaults" class="profile-section" aria-labelledby="defaults-title">
+            <div class="section-intro">
+              <h2 id="defaults-title">Application defaults</h2>
+              <p>Choose the answers Autofill can reuse when it recognizes these questions. Select Leave unanswered to clear a default.</p>
+            </div>
+            <div class="field-grid">
+              <div class="field">
+                <label class="field-label" for="default-visa-sponsorship">Visa sponsorship required</label>
+                <select id="default-visa-sponsorship">
+                  <option value="">Leave unanswered</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label" for="default-gender">Gender</label>
+                <select id="default-gender">
+                  <option value="">Leave unanswered</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="nonbinary">Nonbinary</option>
+                  <option value="decline">Prefer not to answer</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label" for="default-disability">Disability</label>
+                <select id="default-disability">
+                  <option value="">Leave unanswered</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                  <option value="decline">Prefer not to answer</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label" for="default-veteran">Veteran status</label>
+                <select id="default-veteran">
+                  <option value="">Leave unanswered</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                  <option value="decline">Prefer not to answer</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label" for="default-hispanic-latino">Hispanic or Latino</label>
+                <select id="default-hispanic-latino">
+                  <option value="">Leave unanswered</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                  <option value="decline">Prefer not to answer</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label" for="default-privacy">Automatically accept application privacy notices</label>
+                <select id="default-privacy">
+                  <option value="">Leave unanswered</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label" for="default-relocation">Willing to relocate</label>
+                <select id="default-relocation">
+                  <option value="">Leave unanswered</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label" for="default-onsite-work">Willing to work onsite</label>
+                <select id="default-onsite-work">
+                  <option value="">Leave unanswered</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label" for="default-race-ethnicity">Race or ethnicity</label>
+                <select id="default-race-ethnicity" aria-describedby="race-ethnicity-hint">
+                  <option value="">Leave unanswered</option>
+                  <option value="south_asian">South Asian</option>
+                  <option value="asian">Asian</option>
+                  <option value="decline">Prefer not to answer</option>
+                </select>
+                <p id="race-ethnicity-hint" class="hint">Autofill uses Asian when you choose South Asian and only the broader option is offered.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="profile-section" aria-labelledby="referral-title">
+            <h2 id="referral-title">Application source</h2>
+            <div class="field">
+              <label class="field-label" for="default-referral-source">How you heard about the opportunity</label>
+              <select id="default-referral-source">
+                <option value="">Leave unanswered</option>
+                <option value="linkedin">LinkedIn</option>
+              </select>
+              <p class="hint">Used for common referral-source questions. Exact saved answers take precedence.</p>
+            </div>
+          </section>
+
+          <section id="saved-answers" class="profile-section" aria-labelledby="answers-title">
+            <div class="section-intro section-intro-action">
+              <div>
+                <h2 id="answers-title">Saved answers</h2>
+                <p>Reuse an answer by entering the question as it appears on the application.</p>
+              </div>
+              <button type="button" class="button secondary" id="add-answer">Add answer</button>
+            </div>
+            <div id="answer-list" class="record-list"></div>
+          </section>
+
+          <section id="resume" class="profile-section" aria-labelledby="resume-title">
+            <div class="section-intro">
+              <h2 id="resume-title">Resume</h2>
+              <p>Attach a resume for compatible upload fields. PDF, DOC, or DOCX, up to 2 MiB.</p>
+            </div>
+            <div class="attachment-panel">
+              <div>
+                <label class="field-label" for="resume-file">Choose resume file</label>
+                <input type="file" id="resume-file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+              </div>
+              <div id="resume-current" class="resume-current" hidden>
+                <span id="resume-name"></span>
+                <button type="button" class="button quiet" id="remove-resume">Remove resume</button>
+              </div>
+              <p id="resume-status" class="hint" role="status"></p>
+            </div>
+          </section>
+        </fieldset>
+      </form>
+
+      <section id="ai-settings" class="profile-section" aria-labelledby="ai-title">
+        <div class="section-intro">
+          <h2 id="ai-title">AI settings</h2>
+          <p>Use your own API key to match saved facts and fill custom answers from connected Obsidian notes. You can also request and edit drafts in Review fields.</p>
+        </div>
+
+        <form id="ai-form">
+          <fieldset id="ai-fields" disabled>
+            <legend class="sr-only">AI provider settings</legend>
+            <label class="check-line ai-toggle">
+              <input type="checkbox" id="ai-enabled">
+              <span>Enable AI suggestions</span>
+            </label>
+            <div class="field-grid">
+              <div class="field wide">
+                <label class="check-line">
+                  <input type="checkbox" id="ai-interpret-questions" aria-describedby="ai-interpret-hint">
+                  <span>Match unfamiliar questions during Autofill</span>
+                </label>
+                <p id="ai-interpret-hint" class="hint">With AI enabled, Autofill sends question wording and choices to your provider to identify what a question asks. Autofill answers matches using saved profile values in your browser.</p>
+              </div>
+              <div class="field wide">
+                <label class="check-line">
+                  <input type="checkbox" id="ai-use-vault" aria-describedby="vault-hint">
+                  <span>Use Obsidian notes during Autofill</span>
+                </label>
+                <p id="vault-hint" class="hint">With Claude enabled, each Autofill click searches your connected notes and sends relevant excerpts and question context to Claude. Supported custom answers are filled directly. Saved answers take priority, and Undo is available.</p>
+                <button type="button" class="button quiet" id="vault-test">Test Obsidian connection</button>
+                <p id="vault-status" class="notice" role="status" hidden></p>
+                <details><summary>Connection setup</summary><p class="hint">The local helper must be registered for this extension. Your notes stay in their current folder and are read only.</p><p class="hint">Extension ID: <code id="extension-id"></code></p></details>
+              </div>
+              <div class="field">
+                <label class="field-label" for="ai-provider">Provider</label>
+                <select id="ai-provider">
+                  <option value="anthropic">Claude</option>
+                  <option value="openai">OpenAI</option>
+                </select>
+              </div>
+              <label class="field">
+                <span class="field-label">Model ID</span>
+                <input type="text" id="ai-model" autocomplete="off" spellcheck="false">
+              </label>
+              <label class="field wide">
+                <span class="field-label">API key</span>
+                <input type="password" id="ai-key" autocomplete="off" spellcheck="false" aria-describedby="claude-key-hint">
+              </label>
+              <p id="claude-key-hint" class="hint wide">Use a workspace-scoped API key. <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noreferrer">Claude Console API keys</a></p>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="button secondary">Save AI settings</button>
+            </div>
+          </fieldset>
+          <p id="ai-status" class="notice" role="status" aria-atomic="true" hidden></p>
+        </form>
+      </section>
+
+      <section id="local-data" class="profile-section" aria-labelledby="data-title">
+        <div class="section-intro">
+          <h2 id="data-title">Profile data</h2>
+          <p>Export your profile and attached resume as JSON. AI settings are stored separately.</p>
+        </div>
+        <div class="data-actions">
+          <input type="file" id="profile-import" accept=".json,application/json" hidden>
+          <button type="button" class="button secondary" id="import-profile" disabled>Import JSON</button>
+          <button type="button" class="button secondary" id="export-profile" disabled>Export JSON</button>
+          <button type="button" class="button danger" id="clear-data" disabled>Clear local data</button>
+        </div>
+        <p id="data-status" class="notice" role="status" aria-atomic="true" hidden></p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

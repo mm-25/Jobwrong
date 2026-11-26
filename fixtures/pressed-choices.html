@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Example Studio application choices</title>
+</head>
+<body>
+  <main role="tabpanel" aria-label="Application">
+    <h1>Product Designer</h1>
+    <div class="ashby-application-form-field-entry">
+      <label>Are you open to relocating to Pittsburgh? <span aria-hidden="true">*</span></label>
+      <div id="relocation" class="ashby-application-form-input-yesno">
+        <button aria-pressed="false" data-option="yes">Yes</button>
+        <button aria-pressed="false" data-option="no">No</button>
+        <input type="checkbox" aria-hidden="true" tabindex="-1" hidden>
+      </div>
+    </div>
+    <form id="application-form">
+      <p id="sponsorship-caption">Will you require visa sponsorship?</p>
+      <div id="sponsorship" role="group" aria-labelledby="sponsorship-caption">
+        <button type="button" aria-pressed="false" data-option="yes">Yes</button>
+        <button type="button" aria-pressed="true" data-option="no">No</button>
+      </div>
+      <fieldset id="implicit-submit">
+        <legend>Are you available to start next month?</legend>
+        <button aria-pressed="false" data-option="yes">Yes</button>
+        <button aria-pressed="false" data-option="no">No</button>
+      </fieldset>
+      <button type="submit">Submit application</button>
+    </form>
+    <output id="submit-count">0</output>
+    <output id="unsafe-click-count">0</output>
+  </main>
+  <script>
+    for (const group of document.querySelectorAll('#relocation, #sponsorship')) {
+      group.addEventListener('click', (event) => {
+        const choice = event.target.closest('button[data-option]');
+        if (!choice) return;
+        for (const button of group.querySelectorAll('button')) {
+          button.setAttribute('aria-pressed', String(button === choice));
+        }
+        const validationInput = group.querySelector('input');
+        if (validationInput) validationInput.checked = true;
+      });
+    }
+    document.querySelector('#application-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const count = document.querySelector('#submit-count');
+      count.value = String(Number(count.value) + 1);
+    });
+    document.querySelector('#implicit-submit').addEventListener('click', (event) => {
+      if (!event.target.closest('button')) return;
+      const count = document.querySelector('#unsafe-click-count');
+      count.value = String(Number(count.value) + 1);
+    });
+  </script>
+</body>
+</html>

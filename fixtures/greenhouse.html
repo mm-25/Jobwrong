@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Apply for Design Lead</title></head>
+<body>
+  <main id="application">
+    <h1>Apply for Design Lead</h1>
+    <form id="application_form" action="/submitted" method="post">
+      <div class="field">
+        <label for="first_name">First Name</label>
+        <input id="first_name" name="job_application[first_name]" autocomplete="given-name" required>
+      </div>
+      <div class="field">
+        <label for="last_name">Last Name</label>
+        <input id="last_name" name="job_application[last_name]" autocomplete="family-name" required>
+      </div>
+      <div class="field">
+        <label for="country">Country</label>
+        <select id="country" name="job_application[country]" required>
+          <option value="">Select your country</option>
+          <option value="CA">Canada</option>
+          <option value="US">United States</option>
+        </select>
+      </div>
+      <div id="question-location"></div>
+      <fieldset>
+        <legend>How did you hear about this role?</legend>
+        <label><input name="job_application[referral]" type="radio" value="careers" required> Company careers page</label>
+        <label><input name="job_application[referral]" type="radio" value="conference"> Industry conference</label>
+      </fieldset>
+      <label>Are you open to relocation? <input name="job_application[relocation]" type="checkbox"></label>
+      <button type="submit">Submit application</button>
+    </form>
+  </main>
+  <script>
+    const container = document.querySelector('#question-location');
+    document.querySelector('#country').addEventListener('change', (event) => {
+      container.replaceChildren();
+      if (event.target.value !== 'US') return;
+      const question = document.createElement('label');
+      question.textContent = 'Which office would you prefer? ';
+      const input = document.createElement('input');
+      input.name = 'job_application[preferred_office]';
+      input.required = true;
+      question.append(input);
+      container.append(question);
+    });
+
+    const firstName = document.querySelector('#first_name');
+    const nativeValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+    let trackedValue = firstName.value;
+    let modelValue = firstName.value;
+    Object.defineProperty(firstName, 'value', {
+      configurable: true,
+      get() { return nativeValue.get.call(this); },
+      set(value) {
+        nativeValue.set.call(this, value);
+        trackedValue = String(value);
+      },
+    });
+    firstName.addEventListener('input', () => {
+      if (firstName.value !== trackedValue) {
+        modelValue = firstName.value;
+        trackedValue = modelValue;
+      }
+      requestAnimationFrame(() => { firstName.value = modelValue; });
+    });
+    firstName.addEventListener('change', () => {
+      requestAnimationFrame(() => { firstName.value = modelValue; });
+    });
+    document.querySelector('#application_form').addEventListener('reset', () => {
+      modelValue = '';
+      trackedValue = '';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+node_modules/
+.cache/
+dist/
+artifacts/
+test-results/
+playwright-report/
+vendor/
+research/
+.setup/
+.DS_Store
+
+# Local research, browser evidence, and private configuration
+original/
+work/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+jobright-profile*.json
+jobright-local-profile*.json
+__pycache__/
+*.pyc
