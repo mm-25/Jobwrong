@@ -11,12 +11,13 @@ import { eligibleForVault, validatedVaultAnswer, vaultContext, vaultMaxLength } 
 import { eligibleForInterpretation, groundInterpretation, interpretationContext } from './interpretation';
 import { changedField, focusScannedField } from './field-navigation';
 import { associatedUploadGroup, attachmentFilename, hasAttachmentReceipt } from './file-upload';
-import { answerWorkAuthorization, leverPostingLocation } from './work-authorization';
+import { answerWorkAuthorization, applicationPostingLocation } from './work-authorization';
 import { addWorkdayExperienceRows, addWorkdayRepeatRows, workdayExperienceGroup, workdayRepeatGroup, workdayWebsiteAnswers, type WorkdayExperienceGroup, type WorkdayRepeatGroup } from './workday-records';
 import { workdayEducationRow, workdayExperienceRow, workdayExperienceRows, workdayRepeatRows, workdayWebsiteRow, workdayExperiencePageSelector, type WorkdayRepeatKind } from './workday-structure';
 import { committedWorkdayDatePart, workdayDatePart, workdayDateSegments, workdayRequiredDateError } from './workday-date';
 import { workdayTextFieldInput, workdayTextFieldLocation, type WorkdayTextFieldLocation } from './workday-text-fields';
 import { workdayPrompt, workdayPromptMenu } from './workday-controls';
+import { loadWorkdayJobCountry } from './workday-job-context';
 
 interface Checkpoint {
   field: Field;
@@ -239,7 +240,7 @@ export function createEngine(doc: Document, scopeOptions: { applicationForm?: ()
       field, identity: fieldIdentity(field), state: snapshot(field),
       comboIdentity: field.kind === 'combobox' ? fieldIdentity(field, false) : undefined,
       revision: [field.element, ...field.peers].map((element) => revisions.get(element) ?? 0),
-      jobLocation: authorization && !authorization.country ? leverPostingLocation(field.element) : undefined,
+      jobLocation: authorization && !authorization.country ? applicationPostingLocation(field.element) : undefined,
       uploadGroup: field.kind === 'file' ? associatedUploadGroup(field)?.element : undefined,
     };
   }
@@ -346,7 +347,21 @@ export function createEngine(doc: Document, scopeOptions: { applicationForm?: ()
         startRevision: editGeneration, initialFields: new WeakMap(),
       };
     }
-    const fields = applicationFields(form);
+    let fields = applicationFields(form);
+    let lookupRevision: number | undefined;
+    if (fields.some(field => {
+      const authorization = answerWorkAuthorization(field.label);
+      return authorization && !authorization.country && !applicationPostingLocation(field.element);
+    })) {
+      const lookup = loadWorkdayJobCountry(doc);
+      if (lookup) {
+        lookupRevision = editGeneration;
+        const lookupPage = { url: doc.URL, topUrl: accessibleTopUrl(), form };
+        await lookup;
+        if (!samePage(lookupPage)) throw new Error('The application changed while job information was loading. Click Autofill on the current page.');
+        fields = applicationFields(form);
+      }
+    }
     const experienceGroup = scopeOptions.applicationForm ? undefined : workdayExperienceGroup(doc);
     let workdayExperience: Plan['workdayExperience'];
     if (experienceGroup) {
@@ -441,7 +456,8 @@ export function createEngine(doc: Document, scopeOptions: { applicationForm?: ()
         return entry;
       }
 
-      if (run && [field.element, ...field.peers].some(element => (manualRevisions.get(element) ?? 0) > run.startRevision)) {
+      const editBoundary = run?.startRevision ?? lookupRevision;
+      if (editBoundary !== undefined && [field.element, ...field.peers].some(element => (manualRevisions.get(element) ?? 0) > editBoundary)) {
         preview.status = 'preserved';
         if (current) preview.currentValue = current;
         preview.reason = 'You edited this field during Autofill.';
@@ -685,7 +701,9 @@ export function createEngine(doc: Document, scopeOptions: { applicationForm?: ()
         // The paired writer revalidates the other segment through its own checkpoint and revision.
         if (!ownField && paired?.has(identity.field.element)) continue;
         const row = (ownField ? replacement : undefined) ?? updatedRows.get(identity.field.element) ?? identity;
-        if (!unchanged(inspectField(row.field.element), row, before.field.kind === 'combobox' && ownField,
+        // A sibling's popup catalog can open, close, or load while moving through a row.
+        // Its question, selected value, node and edit revision still identify the saved record.
+        if (!unchanged(inspectField(row.field.element), row, row.field.kind === 'combobox',
           ownField ? expected : undefined)) return false;
       }
       return true;

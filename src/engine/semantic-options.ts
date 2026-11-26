@@ -16,6 +16,7 @@ type Question = {
   unlessLocatedIn?: string;
   acknowledgment?: true;
   relocationRadius?: string;
+  affirmativeOnly?: true;
 };
 export type SemanticQuestion = Question | { topic: 'workAuthorization'; inverse: boolean; location: string; proposition: true };
 export type SemanticMatching = boolean | SemanticQuestion | 'visible';
@@ -86,6 +87,24 @@ function semanticWords(text: string): string {
     .replace(/\byou're\b/gi, 'you are')
     .replace(visaExamples, '')
     .replace(/\s*[(\[](?:required|optional|voluntary)[)\]]\s*[?*]*$/i, ''));
+}
+
+const immigrationDisjunction = new RegExp('^(?:do|will|would) you(?: ' + interval + '| currently)? (?:require|need) (?:any )?'
+  + '(?:immigration filings? or (?:(?:visa|employer) )?sponsorship|(?:(?:visa|employer) )?sponsorship or immigration filings?)'
+  + '(?: to (?:maintain|obtain) (?:your )?work authori[sz]ation)?$');
+
+function immigrationOrSponsorship(source: string): boolean {
+  const parts = source.split(/\s+including\s+/i);
+  if (parts.length > 2 || !immigrationDisjunction.test(semanticWords(parts[0]))) return false;
+  if (parts.length === 1) return true;
+  // Only nonrestrictive examples of the same immigration requirement may follow.
+  // Sponsorship Yes proves A OR B; sponsorship No cannot establish the other fact.
+  const examples = parts[1].split(',').map(semanticWords);
+  return examples.length > 0 && examples.every(example =>
+    /^(?:renewal|extension|renewal extension|renewal or extension) of (?:an? )?open work permits?$/.test(example)
+    || /^(?:permanent residency|permanent residence|etc)$/.test(example)
+    || (/^sponsorship(?: by [\p{L}\p{N}]+(?: [\p{L}\p{N}]+){0,9})?$/u.test(example)
+      && !/\b(?:only|not|without|if|unless|but|except|must|you|require|hold|agree|citizen)\b/.test(example)));
 }
 
 const locationWillingness = /^(?:(?:are you|would you be|will you be|i am|i would be) )?(willing|not willing|unwilling|open|not open|able|not able|unable) to (.+)$/;
@@ -180,6 +199,8 @@ function classify(label: string, source = label): Question | undefined {
   const demographic = label.replace(/ (?:mark|select|check) all that apply$/, '');
   if (raceQuestion.test(demographic) || raceIdentityQuestion.test(demographic)) return { topic: 'raceEthnicity' };
   if (genderQuestion.test(demographic) || genderIdentityQuestion.test(demographic)) return { topic: 'gender' };
+
+  if (immigrationOrSponsorship(source)) return { topic: 'visaSponsorship', proposition: true, affirmativeOnly: true };
 
   const visa = visaQuestion.exec(label) ?? namedEmployerVisaQuestion.exec(label);
   if (visa) {
@@ -340,6 +361,7 @@ export function applicationAnswer(field: Field, defaults: ApplicationDefaults, q
   }
   const value = defaults[question.topic];
   if (!value) return undefined;
+  if (question.affirmativeOnly && value !== 'yes') return undefined;
   if (question.relocationRadius && !supportsRadiusWillingness(field, question, value)) return undefined;
   if (question.acknowledgment && value !== 'yes') return undefined;
   if (value === 'decline') return singleCheckbox ? undefined : 'Decline';

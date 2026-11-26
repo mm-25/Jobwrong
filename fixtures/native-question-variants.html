@@ -1,0 +1,23 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Native application fields</title></head>
+<body data-submits="0"><main>
+<div role="radiogroup" aria-label="1. How did you hear about us?">
+  <label><input type="radio" name="source" value="38">Indeed</label>
+  <label><input type="radio" name="source" value="39">LinkedIn</label>
+</div>
+<div role="radiogroup" aria-label="6. Are you lawfully entitled to be employed in the United States?*">
+  <label><input type="radio" name="authorization" value="1-True">Yes</label>
+  <label><input type="radio" name="authorization" value="1-False">No</label>
+</div>
+<label id="EEOQuestion-1" for="EEOQuestion-1">Gender</label>
+<div><select id="EEOQuestion-1" aria-labelledby="EEOQuestion-1">
+  <option value="0">Please Select</option><option value="1">Female</option><option value="2">Male</option>
+</select></div>
+<label>2. Are you 18 years of age or older?<select id="age">
+  <option value="0">Please Select</option><option>Yes</option><option>No</option>
+</select></label>
+<form><button type="submit">Submit</button></form>
+</main><script>
+document.querySelector('form').addEventListener('submit', event => {
+  event.preventDefault(); document.body.dataset.submits = String(Number(document.body.dataset.submits) + 1);
+});
+</script></body></html>

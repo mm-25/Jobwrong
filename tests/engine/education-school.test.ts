@@ -8,6 +8,47 @@ const dearborn = 'University of Michigan - Dearborn';
 const flint = 'University of Michigan - Flint';
 const campuses = [annArbor, dearborn, flint];
 
+test('recognizes a verified institutional rename in either direction across native and Workday matching', () => {
+  const current = 'K.J Somaiya Institute of Technology';
+  const former = 'K.J. Somaiya Institute of Engineering & Information Technology';
+  for (const [saved, offered] of [[current, former], [former, current]]) {
+    expect(formatSchoolName(schoolSelect(offered), saved)).toBe(offered);
+    expect(sameSchoolIdentity(offered, saved)).toBe(true);
+    expect(sameWorkdaySchoolIdentity(offered, saved)).toBe(true);
+    expect(selectWorkdaySchool(workdaySchoolSearch(saved)!, schoolSelect(offered).choices)?.label).toBe(offered);
+  }
+});
+
+test('a verified rename does not broaden to similar colleges, parent universities or unverified campus qualifiers', () => {
+  const current = 'K.J Somaiya Institute of Technology';
+  for (const offered of ['K.J. Somaiya College of Engineering', 'University of Mumbai',
+    'K.J. Somaiya Institute of Engineering and Information Technology, Mumbai University',
+    'K.J. Somaiya Institute of Engineering and Information Technology - Another Campus']) {
+    expect(sameSchoolIdentity(offered, current)).toBe(false);
+    expect(selectWorkdaySchool(workdaySchoolSearch(current)!, schoolSelect(offered).choices)).toBeUndefined();
+  }
+});
+
+test.each([
+  ['KJ Somaiya Institute of Engineering and Information Technology', 'K.J. Somaiya Institute of Engineering & Information Technology'],
+  ['Texas A&M University', 'Texas A and M University'],
+  ['J R R Example Institute', 'J.R.R. Example Institute'],
+])('matches spelling variants of the same complete institution: %s', (saved, offered) => {
+  expect(formatSchoolName(schoolSelect(offered), saved)).toBe(offered);
+  expect(sameSchoolIdentity(offered, saved)).toBe(true);
+  const search = workdaySchoolSearch(saved)!;
+  expect(selectWorkdaySchool(search, schoolSelect(offered).choices)?.label).toBe(offered);
+});
+
+test('institution punctuation aliases do not equate different colleges, campuses or university affiliations', () => {
+  const school = 'KJ Somaiya Institute of Engineering and Information Technology';
+  const search = workdaySchoolSearch(school)!;
+  const different = schoolSelect('K.J. Somaiya College of Engineering',
+    school + ' - Another Campus', school + ', Mumbai University');
+  expect(formatSchoolName(different, school)).toBeUndefined();
+  expect(selectWorkdaySchool(search, different.choices)).toBeUndefined();
+});
+
 function schoolSelect(...labels: string[]): Pick<Field, 'kind' | 'choices'> {
   return {
     kind: 'select',

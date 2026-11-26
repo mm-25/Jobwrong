@@ -36,7 +36,7 @@ test('preserves an unqualified school without adding a campus or study preferenc
   ]);
   expect(loaded.applicationDefaults).toEqual({});
   expect(loaded.workAuthorizations).toBeUndefined();
-  expect(data[revisionKey]).toBe(5);
+  expect(data[revisionKey]).toBe(6);
   await saveProfile({ ...loaded, education: [school()] });
   expect((await loadProfile()).education).toEqual([school()]);
 });

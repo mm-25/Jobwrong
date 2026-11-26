@@ -76,6 +76,31 @@
         <input id="education-6--schoolName" value="Example Art University">`;
       field.before(row);
       row.append(field);
+      const educationGroup = document.createElement('div');
+      educationGroup.setAttribute('role', 'group');
+      educationGroup.setAttribute('aria-labelledby', 'Education-section');
+      educationGroup.innerHTML = '<h4 id="Education-section">Education</h4>';
+      row.before(educationGroup);
+      educationGroup.append(row);
+      const experiencePage = document.createElement('div');
+      experiencePage.setAttribute('data-automation-id', 'applyFlowMyExpPage');
+      const form = document.querySelector('form');
+      form.before(experiencePage);
+      experiencePage.append(form);
+      if (anomaly === 'sibling-degree') {
+        row.insertAdjacentHTML('afterbegin', `<div data-automation-id="formField-degree">
+          <label for="education-6--degree">Degree</label><button type="button" id="education-6--degree"
+            aria-haspopup="listbox" aria-controls="degree-options" aria-expanded="true"
+            aria-label="Degree Master of Science Required" value="ms">Master of Science</button></div>`);
+        document.body.insertAdjacentHTML('beforeend', `<ul role="listbox" id="degree-options">
+          <li role="option" data-value="ms">Master of Science</li><li role="option" data-value="ba">Bachelor of Arts</li></ul>`);
+        input.addEventListener('focus', () => {
+          document.getElementById('degree-options')?.remove();
+          const degree = document.getElementById('education-6--degree');
+          degree.removeAttribute('aria-controls');
+          degree.removeAttribute('aria-expanded');
+        });
+      }
     }
 
     function option(caption, branch = false) {

@@ -258,7 +258,7 @@ async function checkProfile(page) {
   assert.equal(await skills.inputValue(), '');
   await firstName.fill('Avery');
   assert.deepEqual(await Promise.all(defaultInputs.map(input => input.inputValue())), requestedDefaults);
-  assert.equal(await page.evaluate(() => fixtureState.values['jobright.application-defaults.revision']), 5);
+  assert.equal(await page.evaluate(() => fixtureState.values['jobright.application-defaults.revision']), 6);
   await gender.selectOption('decline');
   await disability.selectOption('');
   await privacy.selectOption('no');
@@ -271,6 +271,9 @@ async function checkProfile(page) {
   await page.getByRole('button', { name: 'Add education' }).click();
   await page.getByRole('textbox', { name: 'School' }).fill('Example University');
   await page.getByRole('textbox', { name: 'Campus', exact: true }).fill('Main Campus');
+  const degreeAlternatives = page.getByRole('textbox', { name: /^Accepted degree alternatives/ });
+  const orderedDegreeAlternatives = ['Bachelor of Engineering', 'Bachelor of Science'];
+  await degreeAlternatives.fill(' Bachelor of Engineering\n\nBachelor of Science');
   const studyAlternatives = page.getByRole('textbox', { name: /^Field of study alternatives/ });
   const orderedStudyAlternatives = ['UX Research', 'Product Design', 'Web Design', 'Other'];
   await studyAlternatives.fill(' UX Research\nProduct Design\n\nWeb Design\nOther');
@@ -317,6 +320,7 @@ async function checkProfile(page) {
   assert.equal(saved.employment[1].company, 'Second Studio');
   assert.equal(saved.education[0].school, 'Example University');
   assert.equal(saved.education[0].campus, 'Main Campus');
+  assert.deepEqual(saved.education[0].degreeAlternatives, orderedDegreeAlternatives);
   assert.deepEqual(saved.education[0].fieldOfStudyAlternatives, orderedStudyAlternatives);
   assert.equal(saved.education[0].current, false);
   assert.deepEqual(saved.answers, [{ question: 'Years of design experience?', answer: '5' }]);
@@ -354,7 +358,7 @@ async function checkProfile(page) {
   await page.getByText('Profile saved.', { exact: true }).waitFor();
   assert.deepEqual(await page.evaluate(() => fixtureState.values['jobright.profile.v1'].applicationDefaults), {});
   assert.deepEqual(await page.evaluate(() => fixtureState.values['jobright.profile.v1'].education[0].fieldOfStudyAlternatives), []);
-  assert.equal(await page.evaluate(() => fixtureState.values['jobright.application-defaults.revision']), 5);
+  assert.equal(await page.evaluate(() => fixtureState.values['jobright.application-defaults.revision']), 6);
 
   assert.equal(await provider.inputValue(), 'openai');
   assert(await matchQuestions.isChecked());

@@ -1,7 +1,16 @@
 import { words, type Choice, type Field } from './discovery';
 
+// Verified institutional renames, matched only as complete names. Do not drop
+// arbitrary words or infer that a similarly named college is the same institution.
+// Somaiya's own notice: https://www.somaiya.edu.in/en/view-career/312/
+const institutionalRenames: Readonly<Record<string, string>> = {
+  'kj somaiya institute of engineering and information technology': 'kj somaiya institute of technology',
+};
+
 function schoolKey(label: string): string {
-  return words(label.normalize('NFKD').replace(/\p{M}/gu, '').toLocaleLowerCase('en-US'));
+  const key = words(label.normalize('NFKD').replace(/\p{M}/gu, '').replace(/&/g, ' and ').toLocaleLowerCase('en-US'))
+    .replace(/\b(?:[a-z] ){1,}[a-z]\b/g, initials => initials.replace(/ /g, ''));
+  return Object.hasOwn(institutionalRenames, key) ? institutionalRenames[key] : key;
 }
 
 function conflictsWithCampus(label: string, campusName: string): boolean {

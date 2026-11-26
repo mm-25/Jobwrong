@@ -55,7 +55,7 @@ describe('willingness and race or ethnicity defaults', () => {
 
     const loaded = await loadProfile();
     expect(loaded.applicationDefaults).toEqual(expected);
-    expect(write).toHaveBeenCalledExactlyOnceWith({ [profileKey]: loaded, [revisionKey]: 5 });
+    expect(write).toHaveBeenCalledExactlyOnceWith({ [profileKey]: loaded, [revisionKey]: 6 });
     expect(await loadProfile()).toEqual(loaded);
     expect(write).toHaveBeenCalledTimes(1);
   });
@@ -79,7 +79,7 @@ describe('willingness and race or ethnicity defaults', () => {
     await saveProfile({ ...emptyProfile(), applicationDefaults: {} });
 
     expect((await loadProfile()).applicationDefaults).toEqual({});
-    expect(entries[revisionKey]).toBe(5);
+    expect(entries[revisionKey]).toBe(6);
     await clearLocalData();
     expect((await loadProfile()).applicationDefaults).toEqual(newDefaults);
   });

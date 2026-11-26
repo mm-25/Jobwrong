@@ -1,10 +1,10 @@
 import { workdaySkillsWidget } from './workday-skills';
 import type { Education, Employment, PersonalDetails, Profile } from '../shared/types';
 import { isAshbyLocation, labelText, normalize, normalizeQuestion, words, type Choice, type Field, type SectionKind } from './discovery';
-import { countryKey, degreeRecordCompatible, explicitCountryKey, fitKnownChoice, formatDate, formatDegree, formatDialCode, formatPhoneCountry, formatRegion } from './answer-formats';
+import { countryKey, degreeRecordCompatible, explicitCountryKey, fitKnownChoice, formatDate, formatDegree, formatDegreePreferences, formatDialCode, formatPhoneCountry, formatRegion } from './answer-formats';
 import { configuredApplicationAnswer, semanticQuestion } from './semantic-options';
 import { isReferralQuestion, referralAnswer } from './referral-source';
-import { answerWorkAuthorization, leverPostingLocation } from './work-authorization';
+import { answerWorkAuthorization, applicationPostingLocation } from './work-authorization';
 import { formatSchoolName, sameSchoolIdentity, sameWorkdaySchoolIdentity, workdaySchoolSearch, type WorkdaySchoolSearch } from './education-school';
 import { formatFieldOfStudy } from './field-of-study';
 import { greenhouseLocationWidget, isGreenhouseCandidateLocation } from './greenhouse-location';
@@ -71,7 +71,7 @@ const educationKeys: [keyof Education, RegExp][] = [
   ['gpa', /^(?:cumulative |overall )?(?:gpa|grade point average)$/],
 ];
 
-const sensitivePurpose = /\b(?:authori[sz](?:ed|ation)|sponsor(?:ship|ed)?|visa|citizen(?:ship)?|immigra(?:nt|tion)|work permit|right to work|(?:eligible|entitled|permitted) to work|legal(?:ly)?|religion|religious|ethnicity|ethnic|race|racial|gender|pronouns?|sexual(?:ity| orientation)?|sex(?:ual)?|transgender|marital|married|spouse|dependents|family status|veteran|military service|disabilit(?:y|ies)|disabled|medical|health|accommodations?|medical history|birth(?:date|day)?|dob|age|e ?e ?o(?: c)?|self identifica(?:tion|tion form)|hispanic|latino|latina|latinx|salary|compensation|pay expectation|income|nationality|national origin|social security|ssn|national id|tax(?:payer)?|criminal|felony|convict(?:ed|ion)|background check|drug test|credit check|security clearance|passport|drivers? licen[cs]e|references?|political|genetic|height|weight)\b/i;
+const sensitivePurpose = /\b(?:authori[sz](?:ed|ation)|sponsor(?:ship|ed)?|visa|citizen(?:ship)?|immigra(?:nt|tion)|work permit|right to work|(?:eligible|entitled|permitted) to work|legal(?:ly)?|lawful(?:ly)?|religion|religious|ethnicity|ethnic|race|racial|gender|pronouns?|sexual(?:ity| orientation)?|sex(?:ual)?|transgender|marital|married|spouse|dependents|family status|veteran|military service|disabilit(?:y|ies)|disabled|medical|health|accommodations?|medical history|birth(?:date|day)?|dob|age|e ?e ?o(?: c)?|self identifica(?:tion|tion form)|hispanic|latino|latina|latinx|salary|compensation|pay expectation|income|nationality|national origin|social security|ssn|national id|tax(?:payer)?|criminal|felony|convict(?:ed|ion)|background check|drug test|credit check|security clearance|passport|drivers? licen[cs]e|references?|political|genetic|height|weight)\b/i;
 const harmlessLegalName = /\b(?:legal (?:first |given |middle |additional |last |family )?name|full legal name)\b/g;
 const firstAndLastName = /^(?:(?:please )?(?:list|enter|provide)(?: your)? |what (?:is|are) your |your )?(?:legal )?(?:first|given)(?: name)? (?:and )?(?:legal )?(?:last|family) names?$/;
 const preferredNameCaption = /\b(?:(?:preferred|chosen)(?: or (?:preferred|chosen))? (?:(?:first|given|middle|additional|last|family|full|first and last) )?names?|(?:preferred|chosen) surname|what would you like us to call you)\b/;
@@ -85,6 +85,15 @@ const portfolioObject = '(?:portfolio(?: website)?|personal website|website(?: o
 const portfolioRequest = new RegExp('^(?:please )?(?:provide|share|enter|link)(?: (?:a|the))?(?: (?:link|url) to)?(?: your)? '
   + portfolioObject + '(?: (?:url|link))?(?: with us| here)?$');
 const portfolioShareQuestion = /^do you have a portfolio (?:that )?you would like to share(?: with us)?$/;
+const portfolioLinkRequest = /^(?:please )?(?:provide|share|enter)(?: (?:a|the))? (?:link|url) (?:to|for) (?:(?:your|a|the) )?(?:(?:design|online|professional) )?portfolio(?: (?:demonstrating|showcasing|showing|featuring|containing) [\p{L}\p{N} ]{1,180})?$/u;
+const portfolioAdditionalRequest = /\b(?:explain|describe|tell|include|list|provide|share|attach|upload|write|someone else|another designer)\b/;
+
+function asksPortfolioUrl(label: string): boolean {
+  if (portfolioRequest.test(label) || portfolioShareQuestion.test(label)) return true;
+  if (!portfolioLinkRequest.test(label)) return false;
+  const description = label.split(/\bportfolio\b/)[1] ?? '';
+  return !portfolioAdditionalRequest.test(description);
+}
 const schoolName = '(?:school|university|college|educational institution)';
 const currentSchool = new RegExp(`^(?:(?:your )?current ${schoolName}(?: name)?|(?:which|what) ${schoolName} are you (?:currently )?attending)$`);
 const lastSchool = new RegExp(`^(?:(?:your )?(?:last|most recent) ${schoolName}(?: attended)?|(?:which|what) ${schoolName} did you (?:last|most recently) attend)$`);
@@ -168,7 +177,7 @@ export function eligibleForReviewedAnswer(field: Field): boolean {
   if (isAshbyLocation(field.element) || isGreenhouseCandidateLocation(field.element)) return false;
   if (!field.trustedLabel || field.blocked || field.section || isSensitive(field) || field.kind === 'file' || field.kind === 'checkbox') return false;
   const label = words(field.label);
-  return !asksFirstAndLastName(field) && !asksPreferredName(field) && !portfolioRequest.test(label) && !portfolioShareQuestion.test(label)
+  return !asksFirstAndLastName(field) && !asksPreferredName(field) && !asksPortfolioUrl(label)
     && !currentLocationLabel.test(label) && !currentEmployer.test(label) && !currentTitle.test(label)
     && !schoolQuestion(label) && !graduationQuestion(label)
     && hiringQuestion.test(label);
@@ -187,7 +196,7 @@ function personalAnswer(field: Field, personal: PersonalDetails): Answer | undef
     const parts = [personal.city, personal.state, personal.country].map(value => value?.trim());
     return parts.every(Boolean) ? parts.join(', ') : undefined;
   }
-  if (field.kind === 'text' && field.trustedLabel && (portfolioRequest.test(label) || portfolioShareQuestion.test(label))) {
+  if (field.kind === 'text' && field.trustedLabel && asksPortfolioUrl(label)) {
     return personal.website || undefined;
   }
   if (field.kind === 'text' && field.trustedLabel && currentLocationLabel.test(label)) {
@@ -269,7 +278,7 @@ function recordAnswer(field: Field, record: ProfileRecord): Answer | undefined {
   if (key === 'endDate' && record.current === true) return undefined;
   if (typeof value !== 'string') return value;
   if (key === 'startDate' || key === 'endDate') return formatDate(field, value, datePart(field)?.part);
-  if (key === 'degree') return formatDegree(field, value);
+  if (key === 'degree' && 'school' in record) return formatDegreePreferences(field, value, record.degreeAlternatives);
   if (key === 'school' && 'school' in record) return formatSchoolName(field, value, record.campus);
   return value;
 }
@@ -318,7 +327,7 @@ function workAuthorizationAnswer(field: Field, profile: Profile): { answer?: boo
   const sponsorship = semanticQuestion(field);
   const visa = sponsorship?.topic === 'visaSponsorship' ? sponsorship : undefined;
   if (!visa && (booleanControl(field) || (field.kind === 'combobox' && !field.multiple && !field.choices.length))) {
-    const authorization = answerWorkAuthorization(field.label, profile.workAuthorizations, leverPostingLocation(field.element));
+    const authorization = answerWorkAuthorization(field.label, profile.workAuthorizations, applicationPostingLocation(field.element));
     if (authorization) return { answer: authorization.answer, conflict: authorization.conflict };
   }
   const scope = visa?.location;
@@ -387,7 +396,8 @@ export function matchRows(fields: Field[], profile: Profile, currentValue: ReadV
     const detailsMatch = (entry: typeof matchingRows[number], candidate: ProfileRecord) => entry.details.every(field => {
       const key = recordKey(field);
       const observed = currentValue(field);
-      if (key === 'degree' && 'school' in candidate) return degreeRecordCompatible(observed, candidate.degree);
+      if (key === 'degree' && 'school' in candidate) return [candidate.degree, ...(candidate.degreeAlternatives ?? [])]
+        .some(degree => degreeRecordCompatible(observed, degree));
       const expected = recordAnswer(field, candidate);
       return typeof expected === 'boolean' ? words(observed) === (expected ? 'yes' : 'no')
         : typeof expected === 'string' && normalize(observed) === normalize(expected);

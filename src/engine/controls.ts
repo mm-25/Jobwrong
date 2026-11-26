@@ -151,7 +151,7 @@ export function displayValue(field: Field, state = snapshot(field)): string {
     case 'select':
       return state.value.map((node) => {
         const option = node as HTMLOptionElement;
-        return !option.value || (option.disabled && isPlaceholder(option.label)) ? '' : option.label;
+        return !option.value || ((option.disabled || option.index === 0) && isPlaceholder(option.label)) ? '' : option.label;
       }).filter(Boolean).join(', ');
     case 'radio':
     case 'checkbox-group':
@@ -1015,7 +1015,9 @@ export async function writeWorkdayDateParts(edits: readonly WorkdayDateEdit[]): 
     const siblingUnchanged = checkpointWorkdayDateSibling(part, input);
     if (!siblingUnchanged) return false;
     const section = input.parentElement!;
-    const activated = () => root.activeElement === input && section.tabIndex === 0;
+    // Workday makes the selected input tabbable and removes its wrapper from
+    // the tab order. The inactive segment has the opposite wrapper tabIndex.
+    const activated = () => root.activeElement === input && section.tabIndex === -1 && input.tabIndex === 0;
     ownMutation(() => section.click());
     await settle(input);
     if (!activated() || !siblingUnchanged() || !valid()) return false;

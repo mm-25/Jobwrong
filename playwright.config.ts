@@ -22,7 +22,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
-    { name: 'chromium-dom', testMatch: domSpecs, use: { browserName: 'chromium', channel: 'chromium' } },
+    { name: 'chromium-dom', testMatch: [...domSpecs, '**/degree-preferences.spec.ts', '**/workday-questionnaire.spec.ts'], use: { browserName: 'chromium', channel: 'chromium' } },
     { name: 'firefox-dom', testMatch: domSpecs, use: { browserName: 'firefox' } },
     { name: 'chromium-extension', testMatch: ['**/extension.spec.ts', '**/navigation-start.spec.ts', '**/vault-extension.spec.ts'], use: { browserName: 'chromium', channel: 'chromium' } },
   ],

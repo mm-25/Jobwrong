@@ -10,6 +10,7 @@ profile.education = [{
 }];
 
 const scenarios = [
+  { mode: 'sibling-degree', title: 'retains the education record when a sibling Degree catalog closes on focus', reason: undefined, reachesEnd: true },
   { mode: 'progressive', title: 'verifies progressively measured options despite backward overscan movement', reason: undefined, reachesEnd: true },
   { mode: 'measured', title: 'selects after the 333-row list remeasures its scroll extent', reason: undefined, reachesEnd: true },
   { mode: 'unique', title: 'selects the unique offscreen Field of Study and undoes the selection', reason: undefined, reachesEnd: true },
@@ -40,7 +41,7 @@ for (const { mode, title, reason, reachesEnd } of scenarios) {
       education: [{
         ...profile.education[0], fieldOfStudy: 'My unavailable discipline', fieldOfStudyAlternatives: ['Product Design', 'Other'],
       }],
-    } : profile;
+    } : mode === 'sibling-degree' ? { ...profile, education: [{ ...profile.education[0], degree: 'Master of Science' }] } : profile;
     const plan = await page.evaluate(profile => window.__jobrightLocal!.scan(profile), candidate);
     const field = plan.fields.find(field => field.label === 'Field of Study')!;
     expect(field).toMatchObject({ kind: 'combobox', status: 'ready' });

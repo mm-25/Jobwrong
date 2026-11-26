@@ -108,8 +108,10 @@
       };
       const select = input => {
         selected = input;
-        month.parentElement.tabIndex = input === month || !input ? 0 : -1;
-        year.parentElement.tabIndex = input === year ? 0 : -1;
+        month.parentElement.tabIndex = input === month || !input ? -1 : 0;
+        month.tabIndex = input === month || !input ? 0 : -1;
+        year.parentElement.tabIndex = input === year ? -1 : 0;
+        year.tabIndex = input === year ? 0 : -1;
         input?.focus();
       };
       date.addEventListener('focusout', event => {
@@ -165,7 +167,7 @@
     function dateField(key, property, label) {
       const id = `${key}--${property}`;
       const helpId = `helpText-${id}`;
-      const input = (part, placeholder, min, max) => `<div id="${id}-dateSection${part}"${keyboardDates ? ` tabindex="${part === 'Month' ? 0 : -1}"` : ''}>
+      const input = (part, placeholder, min, max) => `<div id="${id}-dateSection${part}"${keyboardDates ? ` tabindex="${part === 'Month' ? -1 : 0}"` : ''}>
         <div aria-hidden="true" id="${id}-dateSection${part}-display" data-automation-id="dateSection${part}-display">${placeholder}</div>
         <input id="${id}-dateSection${part}-input" data-automation-id="dateSection${part}-input" role="spinbutton"
           aria-label="${part}" aria-describedby="${helpId}" aria-valuetext="${placeholder}" aria-valuemin="${min}"

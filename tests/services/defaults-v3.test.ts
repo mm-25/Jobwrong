@@ -35,7 +35,7 @@ test('preserves partial authorization without adding source or full-time authori
   const profile = await loadProfile();
   expect(profile.applicationDefaults).toEqual({});
   expect(profile.workAuthorizations).toEqual([{ country: 'US', authorized: true, sponsorshipRequired: true }]);
-  expect(data[revisionKey]).toBe(5);
+  expect(data[revisionKey]).toBe(6);
   const cleared = { ...profile, applicationDefaults: {}, workAuthorizations: [] };
   await saveProfile(cleared);
   const loaded = await loadProfile();

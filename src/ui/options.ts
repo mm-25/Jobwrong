@@ -52,8 +52,9 @@ const employmentFields: FieldSpec<Employment>[] = [
 
 const educationFields: FieldSpec<Education>[] = [
   { key: 'school', label: 'School', wide: true },
-  { key: 'campus', label: 'Campus', placeholder: 'Main campus' },
+  { key: 'campus', label: 'Campus', placeholder: 'Ann Arbor' },
   { key: 'degree', label: 'Degree' },
+  { key: 'degreeAlternatives', label: 'Accepted degree alternatives (one per line, in preference order)', type: 'line-list', wide: true },
   { key: 'fieldOfStudy', label: 'Field of study' },
   { key: 'fieldOfStudyAlternatives', label: 'Field of study alternatives (one per line, in preference order)', type: 'line-list', wide: true },
   { key: 'startDate', label: 'Start date', placeholder: 'YYYY-MM' },

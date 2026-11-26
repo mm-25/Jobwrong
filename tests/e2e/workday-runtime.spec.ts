@@ -122,6 +122,26 @@ async function segmentedWorkdayRow(page: Page, browserName: string): Promise<Loc
   return row;
 }
 
+test('Workday commits every month through its roving date controls and clears each complete pair on Undo', async ({ page, browserName }) => {
+  const row = await segmentedWorkdayRow(page, browserName);
+  const from = row.locator('[data-automation-id="formField-startDate"]');
+  for (const month of ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']) {
+    const data = { ...candidate, employment: [{ ...candidate.employment[0], startDate: `2021-${month}` }] };
+    const plan = await page.evaluate(data => window.__jobrightLocal!.scan(data), data);
+    const fields = plan.fields.filter(field => /^From (?:Month|Year)$/.test(field.label));
+    const result = await page.evaluate(({ scanId, ids }) => window.__jobrightLocal!.fill(scanId, ids), {
+      scanId: plan.scanId, ids: fields.map(field => field.id),
+    });
+    expect(result, `month ${month}: ${JSON.stringify(result.entries)}`).toMatchObject({ filled: 2, failed: 0 });
+    await expect(from.locator('[data-automation-id="dateInputWrapper"]')).toHaveAttribute('data-committed-date', `${Number(month)}/2021`);
+    await expectMonth(row, 'startDate', String(Number(month)), month);
+    await expect(date(row, 'startDate', 'Year')).toHaveValue('2021');
+    expect(await page.evaluate(() => window.__jobrightLocal!.undo())).toEqual({ restored: 2, skipped: 0 });
+    await expect(date(row, 'startDate', 'Month')).toBeEmpty();
+    await expect(date(row, 'startDate', 'Year')).toBeEmpty();
+  }
+});
+
 test('Workday commits both date segments together and undoes them', async ({ page, browserName }) => {
   const row = await segmentedWorkdayRow(page, browserName);
   const data = { ...candidate, employment: [{ ...candidate.employment[0], startDate: '2021-10', endDate: '2024-01' }] };

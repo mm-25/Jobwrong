@@ -86,10 +86,14 @@ export function parseProfile(input: unknown): Profile {
     const details = fields(entry, ['school', 'degree', 'fieldOfStudy', 'startDate', 'endDate', 'gpa'] as const);
     const campus = string(entry.campus, 'Education campus');
     const current = optionalBoolean(entry.current, 'Current education');
+    const degreeAlternatives = entry.degreeAlternatives === undefined ? undefined
+      : list(entry.degreeAlternatives, 'Degree alternatives')
+        .map((value, index) => string(value, `Degree alternative ${index + 1}`).replace(/\s+/g, ' ')).filter(Boolean);
     const fieldOfStudyAlternatives = entry.fieldOfStudyAlternatives === undefined ? undefined
       : list(entry.fieldOfStudyAlternatives, 'Field of study alternatives')
         .map((value, index) => string(value, `Field of study alternative ${index + 1}`).replace(/\s+/g, ' ')).filter(Boolean);
     return { ...details, ...(campus ? { campus } : {}), ...(current === undefined ? {} : { current }),
+      ...(degreeAlternatives === undefined ? {} : { degreeAlternatives }),
       ...(fieldOfStudyAlternatives === undefined ? {} : { fieldOfStudyAlternatives }) };
   });
   const workAuthorizations = records(data.workAuthorizations, 'Work authorizations').map(entry => {

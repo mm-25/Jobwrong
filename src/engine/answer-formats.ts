@@ -75,6 +75,10 @@ const regions = {
   },
 };
 
+export function isPostalRegion(code: string, country: string): boolean {
+  return (country === 'US' || country === 'CA') && Object.hasOwn(regions[country], code);
+}
+
 export function formatRegion(field: Field, state: string, country: string): string | undefined {
   const code = countryKey(country);
   if ((code !== 'US' && code !== 'CA') || !field.choices.length) return state;
@@ -90,6 +94,7 @@ const degrees = [
   ['bs', 'b s', 'bsc', 'b sc', 'bachelor of science'],
   ['bfa', 'b f a', 'bachelor of fine arts'],
   ['beng', 'b eng', 'be', 'b e', 'bachelor of engineering'],
+  ['btech', 'b tech', 'bachelor of technology'],
   ['ma', 'm a', 'master of arts'],
   ['ms', 'm s', 'msc', 'm sc', 'master of science'],
   ['mfa', 'm f a', 'master of fine arts'],
@@ -115,7 +120,7 @@ const bachelorLevel = /^(?:bachelor|bachelors|bachelor s)(?: degree)?$/;
 const masterLevel = /^(?:master|masters|master s)(?: degree)?$/;
 const bachelorAward = /^bachelor of [\p{L}][\p{L}\p{N}'’ -]*$/iu;
 const masterAward = /^master of [\p{L}][\p{L}\p{N}'’ -]*$/iu;
-const bachelors = ['ba', 'bs', 'bfa', 'beng'];
+const bachelors = ['ba', 'bs', 'bfa', 'beng', 'btech'];
 const masters = ['ma', 'ms', 'mfa', 'mba', 'meng'];
 
 function savedDegree(value: string) {
@@ -160,6 +165,19 @@ export function formatDegree(field: Field, value: string): string | undefined {
   if (specific.length) return uniqueChoiceToken(field, specific);
 
   return level ? uniqueChoiceToken(field, field.choices.filter(({ label }) => level.test(words(label)))) : degree ? undefined : value;
+}
+
+export function formatDegreePreferences(field: Field, primary: string, alternatives: readonly string[] = []): string | undefined {
+  if (!primary.trim()) return undefined;
+  if (!field.choices.length) return primary;
+  for (const value of [primary, ...alternatives].filter(value => value.trim())) {
+    const match = formatDegree(field, value);
+    if (match !== undefined && field.choices.some(choice =>
+      normalize(choice.label) === normalize(match) || normalize(choice.value) === normalize(match))) return match;
+    // Ambiguity in a preferred award is not permission to choose a less preferred one.
+    if (field.choices.some(choice => degreeRecordCompatible(choice.label, value))) return undefined;
+  }
+  return undefined;
 }
 
 export function phoneCountryOption(value: string): { name: string; code: string } | undefined {

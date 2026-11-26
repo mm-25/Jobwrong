@@ -21,6 +21,7 @@ test('installed Autofill fills and undoes the original Greenhouse application fr
     const options = await context.newPage();
     await options.goto(new URL('options.html', worker.url()).href);
     await options.getByLabel('First name', { exact: true }).fill('Sasha');
+    await options.getByLabel('Willing to relocate', { exact: true }).selectOption('yes');
     await options.getByLabel('Choose resume file').setInputFiles({
       name: resumeName, mimeType: 'application/pdf', buffer: Buffer.from('%PDF synthetic regression fixture'),
     });

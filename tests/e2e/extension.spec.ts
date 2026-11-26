@@ -74,10 +74,12 @@ async function loadExtension(info: TestInfo, fixtureOrigin?: string): Promise<In
   }
 }
 
-async function saveProfile(options: Page): Promise<void> {
+async function saveProfile(options: Page, preferences: Record<string, string> = {}): Promise<void> {
   await options.getByLabel('First name', { exact: true }).fill('Sasha');
   await options.getByLabel('Last name', { exact: true }).fill('Rivera');
   await options.getByLabel('Email', { exact: true }).fill('sasha.rivera@example.test');
+  // Public profiles start blank: each scenario explicitly supplies its facts.
+  for (const [name, value] of Object.entries(preferences)) await options.locator('#default-' + name).selectOption(value);
   await options.getByRole('button', { name: 'Save profile' }).click();
   await expect(options.getByRole('status').filter({ hasText: /saved/i })).toBeVisible();
 }
@@ -104,7 +106,7 @@ for (const unavailable of [false, true]) test(`one-click hybrid Autofill ${unava
   const applicationUrl = 'https://application.example.test/hybrid?session=synthetic-session';
   const questionsSent: { id: string; label: string; context?: string }[][] = [];
   try {
-    await saveProfile(extension.options);
+    await saveProfile(extension.options, { 'visa-sponsorship': 'yes', gender: 'male', relocation: 'yes' });
     await extension.options.getByLabel('Provider', { exact: true }).selectOption('anthropic');
     await extension.options.getByLabel('API key', { exact: true }).fill('sk-ant-synthetic-hybrid-key');
     await extension.options.getByRole('checkbox', { name: 'Enable AI suggestions' }).check();
@@ -176,7 +178,9 @@ test('one-click autofill continues after closing the popup and switching tabs', 
   const extension = await loadExtension(info);
   const origin = 'https://application.example.test';
   try {
-    await saveProfile(extension.options);
+    await saveProfile(extension.options, { 'visa-sponsorship': 'yes', gender: 'male', disability: 'no', veteran: 'no',
+      'hispanic-latino': 'no', privacy: 'yes', relocation: 'yes', 'onsite-work': 'yes', 'race-ethnicity': 'south_asian',
+      'referral-source': 'linkedin' });
     const html = (await readFile(resolve('fixtures/semantic-application.html'), 'utf8')).replace('}, 40);', '}, 180);');
     await extension.context.route(/^https?:\/\//, route => route.request().url().startsWith(origin)
       ? route.fulfill({ contentType: 'text/html', body: html }) : route.abort());

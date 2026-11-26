@@ -11,7 +11,7 @@ test('new public profiles contain no prefilled personal facts or privacy consent
   expect(profile.workAuthorizations).toBeUndefined();
 });
 
-test.each([0, 1, 2, 3, 4, 5])('revision %s does not infer authorization, campus or study preferences', revision => {
+test.each([0, 1, 2, 3, 4, 5, 6])('revision %s does not infer authorization, campus or study preferences', revision => {
   const profile = {
     ...emptyProfile(),
     education: [{ school: 'University of Michigan', degree: 'MS', fieldOfStudy: 'Information',

@@ -11,6 +11,7 @@ export interface Employment {
 }
 export interface Education {
   school: string; degree: string; fieldOfStudy: string; startDate: string; endDate: string; gpa: string;
+  degreeAlternatives?: string[];
   fieldOfStudyAlternatives?: string[];
   campus?: string;
   current?: boolean;

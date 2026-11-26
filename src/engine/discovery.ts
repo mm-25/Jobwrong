@@ -60,7 +60,8 @@ const ignoredLabelChildren = 'input, select, textarea, button, [role="listbox"],
 const requiredMarker = /\s*[*✱∗✳]+\s*$/u;
 
 export const normalize = (text: string): string => text.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('en-US');
-export const normalizeQuestion = (text: string): string => normalize(text).replace(/\s*[(\[]required[)\]]$/i, '').replace(/[\s*?:]+$/g, '');
+const withoutQuestionNumber = (text: string): string => text.replace(/^\s*\d{1,3}[.)]\s+/u, '');
+export const normalizeQuestion = (text: string): string => normalize(withoutQuestionNumber(text)).replace(/\s*[(\[]required[)\]]$/i, '').replace(/[\s*?:]+$/g, '');
 export const words = (text: string): string => normalize(text.replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2').replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[^\p{L}\p{N}]+/gu, ' '));
 
 function textOf(element: Element | null | undefined): string {
@@ -129,13 +130,27 @@ function nativeLabels(element: Element, includeRequiredMarker = false): string {
     .map((label) => labelText(label, includeRequiredMarker)).filter(Boolean).join(' ');
 }
 
-export function workdayListboxLabel(element: Element): HTMLLabelElement | undefined {
+export function workdayListboxLabel(element: Element): HTMLElement | undefined {
   if (!element.matches('button[type="button"][aria-haspopup="listbox"]')) return undefined;
   const wrapper = workdayLocalWrapper(element as HTMLElement);
   if (!wrapper) return undefined;
   const labels = Array.from((element as HTMLButtonElement).labels ?? []).filter(label =>
     label.control === element && label.closest('[data-automation-id^="formField-"]') === wrapper && visible(label));
-  return labels.length === 1 ? labels[0] : undefined;
+  if (labels.length) return labels.length === 1 ? labels[0] : undefined;
+  // Workday questionnaire dropdowns put the question in a legend and announce
+  // only the current selection on the button. Keep the same owned menu path.
+  const fieldset = element.closest('fieldset');
+  if (fieldset?.parentElement !== wrapper) return undefined;
+  const legends = fieldset.querySelectorAll<HTMLLegendElement>(':scope > legend');
+  if (legends.length !== 1 || !visible(legends[0]) || !labelText(legends[0])
+    || legends[0].querySelector('input, textarea, select, button, [contenteditable]')) return undefined;
+  const controls = [...fieldset.querySelectorAll<HTMLElement>(controlSelector + ', button[aria-haspopup="listbox"]')].filter(control => kindOf(control) && visible(control)
+    && !control.closest('[role="listbox"], [role="option"]'));
+  if (controls.length !== 1 || controls[0] !== element) return undefined;
+  const accessible = words(accessibleText(element)).replace(/ (?:required|optional)$/, '');
+  if (accessible && accessible !== words(labelText(element))
+    && accessible !== words(labelText(legends[0]))) return undefined;
+  return legends[0];
 }
 
 function workdayDateLabel(element: Element): (Label & { group: Element; helpId: string }) | undefined {
@@ -272,7 +287,8 @@ function labelFor(element: Element, kind: FieldKind, isPasteAlternative: boolean
   const required = [
     referencedText(element, 'aria-labelledby', true), element.getAttribute('aria-label') ?? '',
     nativeLabels(element, true),
-  ].some((label) => requiredMarker.test(label)) || !!wrapperRequired || !!lever?.required;
+  ].some((label) => requiredMarker.test(label)) || !!wrapperRequired || !!lever?.required
+    || !!workdayListbox && requiredMarker.test(labelText(workdayListbox, true));
   const caption = text.replace(requiredMarker, '');
   return {
     text: isPasteAlternative ? caption + ' (paste as text)' : caption,
@@ -786,7 +802,7 @@ export function inspectField(element: Control, knownRadios?: HTMLInputElement[])
     ...choices.map((choice) => choice.label),
   ].map(words).join(' ');
   return {
-    element, scope, peers, kind, label: preferredName || label.text || words(metadata[0] ?? autocomplete) || 'Unlabeled field',
+    element, scope, peers, kind, label: preferredName || withoutQuestionNumber(label.text) || words(metadata[0] ?? autocomplete) || 'Unlabeled field',
     context, metadata, autocomplete,
     choices, resumeAlternative,
     unsupportedReason: preferredName === false ? 'Complete this preferred-name field on the application page.'

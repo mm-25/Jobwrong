@@ -7,7 +7,7 @@ This repository contains the public JobRight Local browser extension. Keep chang
 - New profiles must start blank. Never add inferred demographic, work-authorization, consent, or education facts. Preserve explicit saved and imported answers.
 - Keep API keys, résumé files, profile exports, vault contents, browser profiles, and live application captures out of Git and logs. Tests must use synthetic identities and credentials.
 - Never submit applications in automated tests. Real employer forms require explicit user authorization.
-- Workday dates and some education fields have known live failures. Passing synthetic tests does not establish complete platform compatibility.
+- Live Workday testing accepted repeated employment dates and both education records through Save and Continue. Version 0.8.8 questionnaire-country and numbered/native-select fixes have automated coverage; their installed Brave retest is pending. Passing synthetic tests does not establish complete platform compatibility.
 
 ## Layout
 

@@ -1,0 +1,48 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Workday questionnaire regression</title></head>
+<body data-submits="0"><main data-automation-id="applyFlowPage">
+<h2 data-automation-id="jobTitleHeading">Designer</h2><h3>Application Questions 1 of 2</h3><form>
+<div data-automation-id="formField-authorization" data-fkit-id="primaryQuestionnaire--authorization"><fieldset>
+  <legend><div data-automation-id="richText"><p><b>Are you authorized to work in the country where this job is located?<abbr title="required">*</abbr></b></p></div></legend>
+  <div><button type="button" id="primaryQuestionnaire--authorization" aria-haspopup="listbox" aria-label=" Select One Required" value="">Select One</button>
+  <input type="text" style="display:none" value=""></div>
+</fieldset></div>
+<div data-automation-id="formField-relocation" data-fkit-id="primaryQuestionnaire--relocation"><fieldset>
+  <legend><div data-automation-id="richText"><p><b>Would you consider relocating for this role?<abbr title="required">*</abbr></b></p></div></legend>
+  <div><button type="button" id="primaryQuestionnaire--relocation" aria-haspopup="listbox" aria-label=" Select One Required" value="">Select One</button>
+  <input type="text" style="display:none" value=""></div>
+</fieldset></div>
+<div data-automation-id="formField-sponsorship" data-fkit-id="primaryQuestionnaire--sponsorship"><fieldset>
+  <legend><div data-automation-id="richText"><p><b>Will you require visa sponsorship?<abbr title="required">*</abbr></b></p></div></legend>
+  <div><button type="button" id="primaryQuestionnaire--sponsorship" aria-haspopup="listbox" aria-label=" Select One Required" value="">Select One</button>
+  <input type="text" style="display:none" value=""></div>
+</fieldset></div>
+<div data-automation-id="formField-attestation" data-fkit-id="primaryQuestionnaire--attestation"><fieldset>
+  <legend><div data-automation-id="richText"><p><b>I acknowledge that these answers are accurate<abbr title="required">*</abbr></b></p></div></legend>
+  <div><button type="button" id="primaryQuestionnaire--attestation" aria-haspopup="listbox" aria-label=" Select One Required" value="">Select One</button></div>
+</fieldset></div>
+<button type="submit">Submit</button></form></main>
+<script>
+document.querySelector('form').addEventListener('submit', event => {
+  event.preventDefault(); document.body.dataset.submits = String(Number(document.body.dataset.submits) + 1);
+});
+for (const button of document.querySelectorAll('button[aria-haspopup="listbox"]')) {
+  button.addEventListener('click', () => {
+    document.querySelector('[role="listbox"]')?.remove();
+    const list = document.createElement('ul');
+    list.id = button.id + '-options'; list.setAttribute('role', 'listbox');
+    button.setAttribute('aria-controls', list.id); button.setAttribute('aria-expanded', 'true');
+    for (const label of ['Select One', 'Yes', 'No']) {
+      const option = document.createElement('li'); option.setAttribute('role', 'option'); option.textContent = label;
+      if (label === 'Select One') option.setAttribute('aria-disabled', 'true');
+      option.addEventListener('click', () => {
+        if (label === 'Select One') return;
+        button.value = label === 'Select One' ? '' : label; button.textContent = label;
+        button.setAttribute('aria-label', ' ' + label + ' Required');
+        button.removeAttribute('aria-controls'); button.removeAttribute('aria-expanded'); list.remove();
+      });
+      list.append(option);
+    }
+    document.body.append(list);
+  });
+}
+</script></body></html>

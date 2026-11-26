@@ -42,3 +42,30 @@ test('rejects a previously planned answer when the job country changes on the sa
   expect(await engine.fill(scan.scanId)).toMatchObject({ filled: 0, needsRescan: true });
   expect(document.querySelector('input:checked')).toBeNull();
 });
+
+test.each([
+  ['New York, NY', 'Yes'],
+  ['Austin, TX', 'Yes'],
+  ['Seattle, WA', 'Yes'],
+  ['Toronto, ON', 'No'],
+  ['Montreal, QC', 'No'],
+])('grounds authorization in an unambiguous posting region: %s', async (location, answer) => {
+  document.body.innerHTML = `${posting()}<form id="application-form">${radio('Are you legally authorized to work in the country for which you are applying?')}</form>`;
+  document.querySelector('.location')!.textContent = location;
+  const engine = createEngine(document);
+  const scan = await engine.scan(profile);
+  expect(scan.fields[0]).toMatchObject({ status: 'ready', value: answer });
+  expect(await engine.fill(scan.scanId)).toMatchObject({ filled: 1 });
+  expect(document.querySelector<HTMLInputElement>('input:checked')?.value).toBe(answer.toLowerCase());
+});
+
+test.each(['Toronto, CA', 'Berlin, DE', 'Boston, MA', 'London', 'New York, ny', 'Canada, NY', 'New York and Toronto, NY'])
+('does not infer a country from ambiguous or malformed region evidence: %s', async location => {
+  document.body.innerHTML = `${posting()}<form id="application-form">${radio('Are you legally authorized to work in the country for which you are applying?')}</form>`;
+  document.querySelector('.location')!.textContent = location;
+  const engine = createEngine(document);
+  const scan = await engine.scan(profile);
+  expect(scan.fields[0]).toMatchObject({ status: 'unanswered', aiEligible: false });
+  expect(await engine.fill(scan.scanId)).toMatchObject({ filled: 0 });
+  expect(document.querySelector('input:checked')).toBeNull();
+});

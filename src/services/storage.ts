@@ -5,7 +5,7 @@ import { extensionAPI } from './extension-api';
 
 const PROFILE = 'jobright.profile.v1', AI = 'jobright.ai.v1';
 const DEFAULTS_REVISION = 'jobright.application-defaults.revision';
-const CURRENT_DEFAULTS_REVISION = 5;
+const CURRENT_DEFAULTS_REVISION = 6;
 export const DEFAULT_AI_MODELS: Readonly<Record<AIProvider, string>> = {
   anthropic: 'claude-sonnet-5-5',
   openai: 'gpt-4.1-mini',

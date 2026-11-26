@@ -33,7 +33,7 @@ function createBoundary() {
   profile.personal.firstName = 'Lin';
   const stored: Record<string, unknown> = {
     'jobright.profile.v1': profile,
-    'jobright.application-defaults.revision': 5,
+    'jobright.application-defaults.revision': 6,
     'jobright.ai.v1': { apiKey: 'separate-provider-secret' },
   };
   const state = { tabUrl: url, documentUrl: url, documentId: 'original-document', activeTab: 9 };

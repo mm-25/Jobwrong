@@ -21,7 +21,7 @@ function application(initial: [string, string] = ['', '']) {
         <div data-automation-id="formField-startDate"><fieldset><legend>From</legend>
           <div><div id="${help}" aria-hidden="true">current value is MM/YYYY</div>
           <div id="${id}" data-automation-id="dateInputWrapper" role="group" aria-labelledby="hiddenDateValueId-${id}">
-            <div tabindex="-1">${part('Month', 'MM', 12, 0)}<span aria-hidden="true">/</span>${part('Year', 'YYYY', 9999, -1)}</div>
+            <div tabindex="-1">${part('Month', 'MM', 12, -1)}<span aria-hidden="true">/</span>${part('Year', 'YYYY', 9999, 0)}</div>
           </div><div id="${help}" hidden>use right and left arrows to navigate spin buttons</div></div>
         </fieldset></div>
       </div>
@@ -45,8 +45,10 @@ function application(initial: [string, string] = ['', '']) {
   render(year, initial[1]);
   for (const input of [month, year]) {
     input.parentElement!.addEventListener('click', () => {
-      month.parentElement!.tabIndex = input === month ? 0 : -1;
-      year.parentElement!.tabIndex = input === year ? 0 : -1;
+      month.parentElement!.tabIndex = input === month ? -1 : 0;
+      month.tabIndex = input === month ? 0 : -1;
+      year.parentElement!.tabIndex = input === year ? -1 : 0;
+      year.tabIndex = input === year ? 0 : -1;
       input.focus();
     });
     input.addEventListener('input', () => render(input, input.value));

@@ -1,10 +1,14 @@
 # Jobwrong
 
-A personal job-application autofill extension. It appears in your browser as **JobRight Local** and uses your saved profile, résumé, and answers, with optional Claude support.
+A personal job-application autofill extension. It appears in your browser as **JobRight Local** and uses your saved profile, résumé, and answers, with optional Claude or OpenAI support.
 
-**Status:** Chromium build 0.8.3. Chrome, Brave, and Edge are the current targets. Workday dates and some education fields still need manual entry. Firefox/Zen development is paused.
+**Status:** Chromium 0.8.8 testing release. Chrome, Brave, and Edge are the current targets. Live Workday testing accepted employment dates and both education records; the latest questionnaire fixes await an installed-browser retest. Firefox/Zen development is paused. Read [what works, limitations, and AI behavior](docs/status-and-ai.md).
 
 ## Install on your device
+
+Download and extract the Chromium ZIP from [release v0.8.8](https://github.com/mm-25/Jobwrong/releases/tag/v0.8.8), then use **Load unpacked** on the extracted folder containing `manifest.json`. Keep that folder on your device. New profiles start blank; existing users can transfer their profile privately using Export JSON and Import JSON. API keys are configured separately.
+
+To build from source:
 
 Install Git and Node.js 22 or newer (including npm), then run:
 
@@ -31,7 +35,7 @@ Keep the repository folder on your device; the browser loads the extension from 
 
 The extension never submits applications. Existing answers are preserved by default, and unsupported or uncertain fields may need manual entry.
 
-**Optional AI:** In **Profile → AI settings**, select Claude, enter your own API key, enable AI, and save. Profile-based filling works without AI. Obsidian integration requires a separate [local helper setup](docs/obsidian-autofill.md) on each device; it is not required for basic Autofill.
+**Optional AI:** In **Profile → AI settings**, select Claude or OpenAI, enter your own API key and an available model ID, enable AI, and save. Enable **Match unfamiliar questions during Autofill** for automatic question interpretation. Narrative answers use **Review fields → Suggest with AI**, followed by your review and approval. Profile-based filling works without AI. See [AI behavior and data sent](docs/status-and-ai.md#when-and-how-ai-runs). Obsidian requires a separate [local helper setup](docs/obsidian-autofill.md) and is not required for basic Autofill.
 
 ## Move your profile to another device
 

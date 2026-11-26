@@ -46,7 +46,7 @@ test.each(['Ann Arbor', undefined])('preserves education at campus %s without ad
   expect(loaded.education[0].fieldOfStudyAlternatives).toBeUndefined();
   expect(loaded.education[1]).toEqual(education[1]);
   expect(loaded.applicationDefaults).toEqual({});
-  expect(data[revisionKey]).toBe(5);
+  expect(data[revisionKey]).toBe(6);
   loaded.education[0].fieldOfStudyAlternatives = [];
   await saveProfile(loaded);
   expect((await loadProfile()).education[0].fieldOfStudyAlternatives).toEqual([]);
@@ -63,5 +63,5 @@ test.each([
 ].map(education => ({ education })))('preserves existing preferences and avoids ambiguous or unrelated records (%j)', async ({ education }) => {
   data[profileKey] = { ...emptyProfile(), applicationDefaults: {}, education };
   expect((await loadProfile()).education).toEqual(education);
-  expect(data[revisionKey]).toBe(5);
+  expect(data[revisionKey]).toBe(6);
 });
